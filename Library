@@ -1,59 +1,199 @@
 --[[
-    ╔══════════════════════════════════════════════════════════════╗
-    ║              SHADOW UI LIBRARY  v6.0                        ║
-    ╚══════════════════════════════════════════════════════════════╝
---]]
+    ╔══════════════════════════════════════════════════════════════════════╗
+    ║                                                                      ║
+    ║   ███████╗██╗  ██╗ █████╗ ██████╗  ██████╗ ██╗    ██╗              ║
+    ║   ██╔════╝██║  ██║██╔══██╗██╔══██╗██╔═══██╗██║    ██║              ║
+    ║   ███████╗███████║███████║██║  ██║██║   ██║██║ █╗ ██║              ║
+    ║   ╚════██║██╔══██║██╔══██║██║  ██║██║   ██║██║███╗██║              ║
+    ║   ███████║██║  ██║██║  ██║██████╔╝╚██████╔╝╚███╔███╔╝              ║
+    ║   ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚══╝╚══╝              ║
+    ║                                                                      ║
+    ║                     UI LIBRARY  v7.0                                ║
+    ║              Config System · Themes · Save/Load                     ║
+    ╚══════════════════════════════════════════════════════════════════════╝
+
+    USAGE:
+        local ShadowUI = loadstring(...)()
+        local ui = ShadowUI.new({ Title="My Script", Subtitle="Welcome Back" })
+
+    CONFIG SYSTEM:
+        Configs are saved in workspace/_ShadowUI_Configs/<title>/
+        Default config is always "default"
+        Auto-load restores last used config on startup
+
+    THEMES:
+        Built-in themes: Dark (default), Midnight, Crimson, Ocean, Forest, Gold
+        Custom themes can be registered via ShadowUI:RegisterTheme(name, colors)
+]]
 
 local ShadowUI = {}
 ShadowUI.__index = ShadowUI
 
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  SERVICES
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 local Players          = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService     = game:GetService("TweenService")
 local RunService       = game:GetService("RunService")
+local HttpService      = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
 
--- ──────────────────────────────────────────────
---  THEME
--- ──────────────────────────────────────────────
-local T = {
-    Bg          = Color3.fromRGB(11,  11,  14),
-    Sidebar     = Color3.fromRGB(15,  15,  19),
-    Header      = Color3.fromRGB(13,  13,  17),
-    SubHeader   = Color3.fromRGB(14,  14,  18),
-    RowHover    = Color3.fromRGB(24,  24,  30),
-    Border      = Color3.fromRGB(32,  32,  42),
-    BorderMid   = Color3.fromRGB(44,  44,  56),
-
-    Accent      = Color3.fromRGB(108, 99,  255),
-    AccentBright= Color3.fromRGB(140, 130, 255),
-    AccentDim   = Color3.fromRGB(60,  58,  90),
-    AccentGlow  = Color3.fromRGB(108, 99,  255),
-
-    ToggleOn    = Color3.fromRGB(48,  186, 102),
-    ToggleOnGlow= Color3.fromRGB(48,  186, 102),
-    ToggleOff   = Color3.fromRGB(38,  38,  50),
-
-    SliderTrack = Color3.fromRGB(28,  28,  38),
-    SliderFill  = Color3.fromRGB(108, 99,  255),
-    SliderThumb = Color3.fromRGB(235, 235, 248),
-
-    DropBg      = Color3.fromRGB(17,  17,  22),
-    DropHover   = Color3.fromRGB(26,  26,  34),
-
-    TextPri     = Color3.fromRGB(220, 220, 232),
-    TextSec     = Color3.fromRGB(85,  85,  108),
-    TextDim     = Color3.fromRGB(48,  48,  62),
-    TextAccent  = Color3.fromRGB(148, 140, 255),
-
-    White       = Color3.fromRGB(255, 255, 255),
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  BUILT-IN THEMES
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+local THEMES = {
+    Dark = {
+        Bg          = Color3.fromRGB(11,  11,  14),
+        Sidebar     = Color3.fromRGB(15,  15,  19),
+        Header      = Color3.fromRGB(13,  13,  17),
+        SubHeader   = Color3.fromRGB(14,  14,  18),
+        RowHover    = Color3.fromRGB(24,  24,  30),
+        Border      = Color3.fromRGB(32,  32,  42),
+        BorderMid   = Color3.fromRGB(44,  44,  56),
+        Accent      = Color3.fromRGB(108, 99,  255),
+        AccentBright= Color3.fromRGB(140, 130, 255),
+        AccentDim   = Color3.fromRGB(60,  58,  90),
+        ToggleOn    = Color3.fromRGB(48,  186, 102),
+        ToggleOff   = Color3.fromRGB(38,  38,  50),
+        SliderTrack = Color3.fromRGB(28,  28,  38),
+        SliderFill  = Color3.fromRGB(108, 99,  255),
+        SliderThumb = Color3.fromRGB(235, 235, 248),
+        DropBg      = Color3.fromRGB(17,  17,  22),
+        DropHover   = Color3.fromRGB(26,  26,  34),
+        TextPri     = Color3.fromRGB(220, 220, 232),
+        TextSec     = Color3.fromRGB(85,  85,  108),
+        TextDim     = Color3.fromRGB(48,  48,  62),
+        TextAccent  = Color3.fromRGB(148, 140, 255),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
+    Midnight = {
+        Bg          = Color3.fromRGB(8,   10,  20),
+        Sidebar     = Color3.fromRGB(10,  13,  26),
+        Header      = Color3.fromRGB(9,   11,  23),
+        SubHeader   = Color3.fromRGB(10,  12,  24),
+        RowHover    = Color3.fromRGB(18,  22,  44),
+        Border      = Color3.fromRGB(28,  34,  68),
+        BorderMid   = Color3.fromRGB(40,  48,  90),
+        Accent      = Color3.fromRGB(64,  120, 255),
+        AccentBright= Color3.fromRGB(100, 160, 255),
+        AccentDim   = Color3.fromRGB(30,  55,  110),
+        ToggleOn    = Color3.fromRGB(40,  180, 220),
+        ToggleOff   = Color3.fromRGB(30,  36,  60),
+        SliderTrack = Color3.fromRGB(20,  24,  50),
+        SliderFill  = Color3.fromRGB(64,  120, 255),
+        SliderThumb = Color3.fromRGB(200, 220, 255),
+        DropBg      = Color3.fromRGB(12,  15,  32),
+        DropHover   = Color3.fromRGB(20,  24,  48),
+        TextPri     = Color3.fromRGB(200, 215, 255),
+        TextSec     = Color3.fromRGB(70,  85,  140),
+        TextDim     = Color3.fromRGB(40,  50,  90),
+        TextAccent  = Color3.fromRGB(120, 165, 255),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
+    Crimson = {
+        Bg          = Color3.fromRGB(12,  8,   10),
+        Sidebar     = Color3.fromRGB(16,  10,  13),
+        Header      = Color3.fromRGB(14,  9,   11),
+        SubHeader   = Color3.fromRGB(15,  9,   12),
+        RowHover    = Color3.fromRGB(30,  16,  20),
+        Border      = Color3.fromRGB(55,  25,  32),
+        BorderMid   = Color3.fromRGB(75,  35,  45),
+        Accent      = Color3.fromRGB(220, 45,  75),
+        AccentBright= Color3.fromRGB(255, 75,  100),
+        AccentDim   = Color3.fromRGB(90,  20,  35),
+        ToggleOn    = Color3.fromRGB(220, 45,  75),
+        ToggleOff   = Color3.fromRGB(50,  25,  32),
+        SliderTrack = Color3.fromRGB(35,  18,  24),
+        SliderFill  = Color3.fromRGB(220, 45,  75),
+        SliderThumb = Color3.fromRGB(255, 200, 210),
+        DropBg      = Color3.fromRGB(18,  10,  14),
+        DropHover   = Color3.fromRGB(28,  15,  20),
+        TextPri     = Color3.fromRGB(255, 215, 220),
+        TextSec     = Color3.fromRGB(120, 60,  75),
+        TextDim     = Color3.fromRGB(70,  35,  45),
+        TextAccent  = Color3.fromRGB(255, 100, 120),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
+    Ocean = {
+        Bg          = Color3.fromRGB(8,   16,  22),
+        Sidebar     = Color3.fromRGB(10,  20,  28),
+        Header      = Color3.fromRGB(9,   18,  25),
+        SubHeader   = Color3.fromRGB(10,  19,  26),
+        RowHover    = Color3.fromRGB(18,  34,  48),
+        Border      = Color3.fromRGB(25,  55,  75),
+        BorderMid   = Color3.fromRGB(35,  75,  100),
+        Accent      = Color3.fromRGB(0,   180, 220),
+        AccentBright= Color3.fromRGB(60,  210, 245),
+        AccentDim   = Color3.fromRGB(15,  70,  95),
+        ToggleOn    = Color3.fromRGB(0,   200, 160),
+        ToggleOff   = Color3.fromRGB(25,  45,  60),
+        SliderTrack = Color3.fromRGB(18,  35,  50),
+        SliderFill  = Color3.fromRGB(0,   180, 220),
+        SliderThumb = Color3.fromRGB(180, 240, 255),
+        DropBg      = Color3.fromRGB(10,  22,  32),
+        DropHover   = Color3.fromRGB(18,  36,  52),
+        TextPri     = Color3.fromRGB(190, 230, 245),
+        TextSec     = Color3.fromRGB(60,  110, 140),
+        TextDim     = Color3.fromRGB(35,  65,  85),
+        TextAccent  = Color3.fromRGB(80,  210, 245),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
+    Forest = {
+        Bg          = Color3.fromRGB(8,   14,  10),
+        Sidebar     = Color3.fromRGB(10,  18,  13),
+        Header      = Color3.fromRGB(9,   16,  11),
+        SubHeader   = Color3.fromRGB(10,  17,  12),
+        RowHover    = Color3.fromRGB(18,  32,  22),
+        Border      = Color3.fromRGB(28,  55,  36),
+        BorderMid   = Color3.fromRGB(40,  75,  50),
+        Accent      = Color3.fromRGB(60,  200, 100),
+        AccentBright= Color3.fromRGB(90,  230, 130),
+        AccentDim   = Color3.fromRGB(25,  80,  45),
+        ToggleOn    = Color3.fromRGB(60,  200, 100),
+        ToggleOff   = Color3.fromRGB(25,  45,  30),
+        SliderTrack = Color3.fromRGB(18,  32,  22),
+        SliderFill  = Color3.fromRGB(60,  200, 100),
+        SliderThumb = Color3.fromRGB(190, 255, 210),
+        DropBg      = Color3.fromRGB(10,  18,  13),
+        DropHover   = Color3.fromRGB(18,  32,  22),
+        TextPri     = Color3.fromRGB(200, 240, 210),
+        TextSec     = Color3.fromRGB(65,  120, 80),
+        TextDim     = Color3.fromRGB(38,  70,  48),
+        TextAccent  = Color3.fromRGB(100, 220, 130),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
+    Gold = {
+        Bg          = Color3.fromRGB(14,  12,  8),
+        Sidebar     = Color3.fromRGB(18,  15,  9),
+        Header      = Color3.fromRGB(16,  13,  8),
+        SubHeader   = Color3.fromRGB(17,  14,  9),
+        RowHover    = Color3.fromRGB(32,  26,  14),
+        Border      = Color3.fromRGB(60,  48,  20),
+        BorderMid   = Color3.fromRGB(85,  68,  28),
+        Accent      = Color3.fromRGB(220, 175, 40),
+        AccentBright= Color3.fromRGB(255, 210, 80),
+        AccentDim   = Color3.fromRGB(90,  70,  18),
+        ToggleOn    = Color3.fromRGB(220, 175, 40),
+        ToggleOff   = Color3.fromRGB(50,  40,  18),
+        SliderTrack = Color3.fromRGB(30,  24,  12),
+        SliderFill  = Color3.fromRGB(220, 175, 40),
+        SliderThumb = Color3.fromRGB(255, 240, 190),
+        DropBg      = Color3.fromRGB(18,  14,  8),
+        DropHover   = Color3.fromRGB(30,  24,  12),
+        TextPri     = Color3.fromRGB(255, 240, 195),
+        TextSec     = Color3.fromRGB(130, 100, 40),
+        TextDim     = Color3.fromRGB(75,  60,  24),
+        TextAccent  = Color3.fromRGB(255, 200, 60),
+        White       = Color3.fromRGB(255, 255, 255),
+    },
 }
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  UTILS
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 local function New(cls, p, ch)
     local o = Instance.new(cls)
     for k, v in pairs(p) do if k ~= "Parent" then o[k] = v end end
@@ -89,7 +229,7 @@ local function MkLbl(p, text, size, color, font, xa, pos, sz, z)
     return New("TextLabel",{
         Parent=p, BackgroundTransparency=1,
         Text=text or "", TextSize=size or 12,
-        TextColor3=color or T.TextPri,
+        TextColor3=color or Color3.new(1,1,1),
         Font=font or Enum.Font.Gotham,
         TextXAlignment=xa or Enum.TextXAlignment.Left,
         TextYAlignment=Enum.TextYAlignment.Center,
@@ -125,12 +265,274 @@ local function MakeDraggable(win, handle)
     end)
 end
 
--- Dropdown overlay
+-- Dropdown overlay global
 local _dropClose = nil
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  CONFIG SYSTEM (writefile/readfile/listfiles)
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+local function SanitizeName(name)
+    return tostring(name):gsub("[^%w%s%-_]",""):gsub("%s+","_"):sub(1,32)
+end
+
+local function GetConfigDir(title)
+    return "_ShadowUI_Configs/"..SanitizeName(title).."/"
+end
+
+local function GetConfigPath(title, configName)
+    return GetConfigDir(title)..SanitizeName(configName)..".json"
+end
+
+local function GetMetaPath(title)
+    return GetConfigDir(title).."_meta.json"
+end
+
+local function FsExists(path)
+    return pcall(readfile, path)
+end
+
+local function SafeWrite(path, data)
+    local ok, err = pcall(writefile, path, data)
+    return ok, err
+end
+
+local function SafeRead(path)
+    local ok, data = pcall(readfile, path)
+    if ok then return data end
+    return nil
+end
+
+local function SafeList(dir)
+    local ok, files = pcall(listfiles, dir)
+    if ok then return files end
+    return {}
+end
+
+local function EnsureDir(dir)
+    pcall(makefolder, dir)
+    pcall(makefolder, dir:match("(.+)/") or dir)
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  SPLASH / INITIALIZATION SCREEN
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+local function CreateSplash(title, subtitle, accentColor, onDone)
+    local SplashGui = New("ScreenGui",{
+        Name="ShadowUI_Splash", Parent=PlayerGui,
+        ResetOnSpawn=false, ZIndexBehavior=Enum.ZIndexBehavior.Sibling,
+        DisplayOrder=999,
+    })
+
+    -- Full overlay
+    local Overlay = New("Frame",{
+        Parent=SplashGui, BackgroundColor3=Color3.fromRGB(5,5,8),
+        Size=UDim2.new(1,0,1,0), ZIndex=1,
+    })
+
+    -- Animated background particles (subtle dots)
+    for i=1,12 do
+        local dot = New("Frame",{
+            Parent=Overlay,
+            BackgroundColor3=accentColor,
+            Size=UDim2.new(0,2,0,2),
+            Position=UDim2.new(math.random()*0.9+0.05, 0, math.random()*0.9+0.05, 0),
+            ZIndex=2,
+            BackgroundTransparency=0.7,
+        })
+        Corn(1, dot)
+        -- Float animation
+        local startY = dot.Position.Y.Scale
+        task.spawn(function()
+            local t = math.random()*math.pi*2
+            while dot and dot.Parent do
+                t = t + 0.016
+                dot.Position = UDim2.new(
+                    dot.Position.X.Scale, 0,
+                    startY + math.sin(t * (0.3 + math.random()*0.3)) * 0.02, 0
+                )
+                RunService.Heartbeat:Wait()
+            end
+        end)
+    end
+
+    -- Glow lines (top & bottom)
+    local topLine = New("Frame",{
+        Parent=Overlay, BackgroundColor3=accentColor,
+        Size=UDim2.new(0,0,0,1), Position=UDim2.new(0.5,0,0,0),
+        ZIndex=3,
+    })
+    New("UIGradient",{
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0,Color3.new(0,0,0)),
+            ColorSequenceKeypoint.new(0.5,accentColor),
+            ColorSequenceKeypoint.new(1,Color3.new(0,0,0)),
+        },
+        Parent=topLine,
+    })
+
+    -- Center card
+    local Card = New("Frame",{
+        Parent=Overlay, BackgroundColor3=Color3.fromRGB(10,10,14),
+        Size=UDim2.new(0,380,0,220),
+        Position=UDim2.new(0.5,-190,0.5,-110),
+        ZIndex=4,
+        BackgroundTransparency=1,
+    })
+    Corn(16, Card)
+
+    local CardStroke = Stro(accentColor, 1, Card)
+    CardStroke.Transparency = 0.6
+
+    -- Logo mark (animated diamond)
+    local LogoWrap = New("Frame",{
+        Parent=Card, BackgroundTransparency=1,
+        Position=UDim2.new(0.5,-24,0,28), Size=UDim2.new(0,48,0,48), ZIndex=6,
+    })
+    local Diamond = New("Frame",{
+        Parent=LogoWrap, BackgroundColor3=accentColor,
+        Size=UDim2.new(1,0,1,0), Rotation=45, ZIndex=7,
+        BackgroundTransparency=0,
+    })
+    Corn(6, Diamond)
+    -- Inner diamond
+    New("Frame",{
+        Parent=LogoWrap,
+        BackgroundColor3=Color3.fromRGB(10,10,14),
+        Position=UDim2.new(0.25,0,0.25,0), Size=UDim2.new(0.5,0,0.5,0),
+        Rotation=45, ZIndex=8,
+    })
+
+    -- Title
+    local TitleLbl = New("TextLabel",{
+        Parent=Card, BackgroundTransparency=1,
+        Position=UDim2.new(0,0,0,86), Size=UDim2.new(1,0,0,30),
+        Text=title, TextSize=22,
+        TextColor3=Color3.fromRGB(220,220,235),
+        Font=Enum.Font.GothamBlack,
+        TextXAlignment=Enum.TextXAlignment.Center,
+        ZIndex=6, TextTransparency=1,
+    })
+
+    -- Subtitle
+    local SubLbl = New("TextLabel",{
+        Parent=Card, BackgroundTransparency=1,
+        Position=UDim2.new(0,0,0,118), Size=UDim2.new(1,0,0,18),
+        Text=subtitle, TextSize=12,
+        TextColor3=Color3.fromRGB(80,80,100),
+        Font=Enum.Font.Gotham,
+        TextXAlignment=Enum.TextXAlignment.Center,
+        ZIndex=6, TextTransparency=1,
+    })
+
+    -- Progress bar background
+    local ProgBg = New("Frame",{
+        Parent=Card, BackgroundColor3=Color3.fromRGB(22,22,28),
+        Position=UDim2.new(0.1,0,0,158), Size=UDim2.new(0.8,0,0,4),
+        ZIndex=6,
+    })
+    Corn(2, ProgBg)
+
+    local ProgFill = New("Frame",{
+        Parent=ProgBg, BackgroundColor3=accentColor,
+        Size=UDim2.new(0,0,1,0), ZIndex=7,
+    })
+    Corn(2, ProgFill)
+    New("UIGradient",{
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0, accentColor),
+            ColorSequenceKeypoint.new(1, Color3.new(1,1,1)),
+        },
+        Parent=ProgFill,
+    })
+
+    -- Status text
+    local StatusLbl = New("TextLabel",{
+        Parent=Card, BackgroundTransparency=1,
+        Position=UDim2.new(0,0,0,170), Size=UDim2.new(1,0,0,14),
+        Text="Initializing...", TextSize=10,
+        TextColor3=Color3.fromRGB(55,55,70),
+        Font=Enum.Font.Gotham,
+        TextXAlignment=Enum.TextXAlignment.Center,
+        ZIndex=6,
+    })
+
+    -- Version badge
+    New("TextLabel",{
+        Parent=Card, BackgroundTransparency=1,
+        Position=UDim2.new(0,0,0,196), Size=UDim2.new(1,0,0,12),
+        Text="SHADOW UI  v2.0", TextSize=9,
+        TextColor3=Color3.fromRGB(40,40,52),
+        Font=Enum.Font.GothamBold,
+        TextXAlignment=Enum.TextXAlignment.Center,
+        ZIndex=6, LetterSpacing=4,
+    })
+
+    -- ── ANIMATION SEQUENCE ──────────────────
+    -- Animate top line expand
+    Tw(topLine, {Size=UDim2.new(1,0,0,1), Position=UDim2.new(0,0,0,0)}, 0.5, Enum.EasingStyle.Quad)
+
+    -- Card fade in
+    task.delay(0.1, function()
+        Tw(Card, {BackgroundTransparency=0}, 0.4, Enum.EasingStyle.Quad)
+    end)
+
+    -- Diamond pulse
+    task.spawn(function()
+        task.wait(0.15)
+        Tw(Diamond, {Rotation=90}, 0.5, Enum.EasingStyle.Back)
+        task.wait(0.25)
+        Tw(Diamond, {Rotation=45}, 0.3, Enum.EasingStyle.Quad)
+    end)
+
+    -- Text reveals
+    task.delay(0.35, function()
+        Tw(TitleLbl, {TextTransparency=0}, 0.4)
+    end)
+    task.delay(0.5, function()
+        Tw(SubLbl, {TextTransparency=0}, 0.3)
+    end)
+
+    -- Loading steps
+    local steps = {
+        {0.05, "Loading modules..."},
+        {0.30, "Setting up UI..."},
+        {0.55, "Applying theme..."},
+        {0.75, "Loading configs..."},
+        {0.90, "Almost ready..."},
+        {1.00, "Done!"},
+    }
+
+    task.spawn(function()
+        task.wait(0.6)
+        for _, step in ipairs(steps) do
+            Tw(ProgFill, {Size=UDim2.new(step[1],0,1,0)}, 0.35, Enum.EasingStyle.Quad)
+            StatusLbl.Text = step[2]
+            task.wait(0.28)
+        end
+        task.wait(0.15)
+
+        -- Exit animation
+        Tw(Card, {BackgroundTransparency=1}, 0.3)
+        Tw(TitleLbl, {TextTransparency=1}, 0.25)
+        Tw(SubLbl, {TextTransparency=1}, 0.2)
+        Tw(StatusLbl, {TextTransparency=1}, 0.2)
+        Tw(ProgBg, {BackgroundTransparency=1}, 0.2)
+        Tw(topLine, {BackgroundTransparency=1}, 0.25)
+
+        task.wait(0.05)
+        Tw(Overlay, {BackgroundTransparency=1}, 0.35, Enum.EasingStyle.Quad)
+
+        task.wait(0.4)
+        SplashGui:Destroy()
+        if onDone then onDone() end
+    end)
+
+    return SplashGui
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  CONSTRUCTOR
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI.new(config)
     config = config or {}
     local self      = setmetatable({}, ShadowUI)
@@ -141,6 +543,41 @@ function ShadowUI.new(config)
     self._sidebar   = {}
     self._visible   = true
     self._activeSec = nil
+    self._controls  = {}   -- all registered controls for save/load
+
+    -- Theme setup
+    self._themeName = config.Theme or "Dark"
+    self._T         = THEMES[self._themeName] or THEMES["Dark"]
+
+    -- Config state
+    self._configTitle  = self.Title
+    self._activeConfig = "default"
+    self._autoLoad     = config.AutoLoad ~= false -- default true
+
+    -- Show splash then build UI
+    local accentCol = self._T.Accent
+    CreateSplash(self.Title, self.Subtitle..", "..self.Username, accentCol, function()
+        self:_Build()
+        -- Auto-load after build
+        if self._autoLoad then
+            local meta = SafeRead(GetMetaPath(self._configTitle))
+            if meta then
+                local ok, data = pcall(HttpService.JSONDecode, HttpService, meta)
+                if ok and data.lastConfig then
+                    self:LoadConfig(data.lastConfig)
+                end
+            end
+        end
+    end)
+
+    return self
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  BUILD MAIN UI
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:_Build()
+    local T = self._T
 
     -- ScreenGui
     self.Gui = New("ScreenGui",{
@@ -148,7 +585,7 @@ function ShadowUI.new(config)
         ResetOnSpawn=false, ZIndexBehavior=Enum.ZIndexBehavior.Sibling, DisplayOrder=100,
     })
 
-    -- ── JANELA PRINCIPAL ────────────────────
+    -- ── JANELA PRINCIPAL ──────────────────────
     self.Win = New("Frame",{
         Name="Window", Parent=self.Gui,
         BackgroundColor3=T.Bg, BorderSizePixel=0,
@@ -156,8 +593,8 @@ function ShadowUI.new(config)
         Size=UDim2.new(0,780,0,440),
         ClipsDescendants=true,
     })
-    Corn(10, self.Win)
-    Stro(T.Border, 1, self.Win)
+    self._winCorn = Corn(10, self.Win)
+    self._winStro = Stro(T.Border, 1, self.Win)
 
     -- Sombra
     New("ImageLabel",{
@@ -167,6 +604,16 @@ function ShadowUI.new(config)
         ImageTransparency=0.45, ScaleType=Enum.ScaleType.Slice,
         SliceCenter=Rect.new(49,49,450,450),
     })
+
+    -- Entrada animada
+    self.Win.Size = UDim2.new(0,0,0,0)
+    self.Win.BackgroundTransparency = 1
+    task.delay(0.05, function()
+        Tw(self.Win, {
+            Size=UDim2.new(0,780,0,440),
+            BackgroundTransparency=0,
+        }, 0.3, Enum.EasingStyle.Back)
+    end)
 
     -- ── HEADER ──────────────────────────────
     self.Header = New("Frame",{
@@ -187,6 +634,7 @@ function ShadowUI.new(config)
         },
         Parent=AccLine,
     })
+    self._accentLine = AccLine
 
     -- Borda inferior
     New("Frame",{
@@ -196,7 +644,7 @@ function ShadowUI.new(config)
 
     MakeDraggable(self.Win, self.Header)
 
-    -- Logo
+    -- Logo (diamond)
     New("Frame",{
         Parent=self.Header, BackgroundTransparency=1,
         Position=UDim2.new(0,10,0.5,-9), Size=UDim2.new(0,18,0,18), ZIndex=5,
@@ -216,7 +664,7 @@ function ShadowUI.new(config)
     self.BreadCat = MkLbl(self.BreadFrame, self.Title, 12, T.TextPri,
         Enum.Font.GothamBold, Enum.TextXAlignment.Left, nil, UDim2.new(0,80,1,0), 5)
 
-    -- Info direita
+    -- Info direita (usuário + expiry)
     New("TextLabel",{
         Parent=self.Header, BackgroundTransparency=1,
         Position=UDim2.new(0,0,0,0), Size=UDim2.new(1,-14,1,0),
@@ -228,14 +676,12 @@ function ShadowUI.new(config)
         LineHeight=1.5, ZIndex=5,
     })
 
-    -- ── SIDEBAR ─────────────────────────────
+    -- ── SIDEBAR ───────────────────────────────
     self.Sidebar = New("Frame",{
         Parent=self.Win, BackgroundColor3=T.Sidebar,
         Position=UDim2.new(0,0,0,38), Size=UDim2.new(0,175,1,-38),
         ZIndex=3, ClipsDescendants=true,
     })
-
-    -- Borda direita da sidebar
     New("Frame",{
         Parent=self.Sidebar, BackgroundColor3=T.Border,
         Position=UDim2.new(1,-1,0,0), Size=UDim2.new(0,1,1,0), ZIndex=4,
@@ -247,10 +693,9 @@ function ShadowUI.new(config)
         Position=UDim2.new(0,8,0,8), Size=UDim2.new(1,-16,0,26), ZIndex=4,
     })
     Corn(6,SW); Stro(T.Border,1,SW)
-    -- ícone lupa
     MkLbl(SW,"🔍",11,T.TextDim,Enum.Font.Gotham,Enum.TextXAlignment.Center,
         UDim2.new(0,0,0,0),UDim2.new(0,24,1,0),5)
-    New("TextBox",{
+    local SearchBox = New("TextBox",{
         Parent=SW, BackgroundTransparency=1,
         Position=UDim2.new(0,22,0,0), Size=UDim2.new(1,-22,1,0),
         Font=Enum.Font.Gotham, PlaceholderText="Search...",
@@ -259,7 +704,6 @@ function ShadowUI.new(config)
         ClearTextOnFocus=false, ZIndex=5,
     })
 
-    -- Linha separadora abaixo do search
     New("Frame",{
         Parent=self.Sidebar, BackgroundColor3=T.Border,
         Position=UDim2.new(0,8,0,40), Size=UDim2.new(1,-16,0,1), ZIndex=4,
@@ -274,7 +718,7 @@ function ShadowUI.new(config)
     local sideL = List(self.SideList)
     AutoCanvas(self.SideList, sideL, 8)
 
-    -- ── CONTENT ─────────────────────────────
+    -- ── CONTENT ───────────────────────────────
     self.Content = New("Frame",{
         Parent=self.Win, BackgroundColor3=T.Bg,
         Position=UDim2.new(0,175,0,38), Size=UDim2.new(1,-175,1,-38), ZIndex=1,
@@ -337,11 +781,9 @@ function ShadowUI.new(config)
     Corn(8, self.ToggleBtn)
     Stro(T.AccentBright, 1, self.ToggleBtn)
 
-    -- Ícone dentro do botão
     self.ToggleIcon = MkLbl(self.ToggleBtn,"◀",13,T.White,Enum.Font.GothamBold,
         Enum.TextXAlignment.Center,nil,UDim2.new(1,0,1,0),201)
 
-    -- Sombra no botão
     New("ImageLabel",{
         Parent=self.ToggleBtn, BackgroundTransparency=1,
         Position=UDim2.new(0,-8,0,-8), Size=UDim2.new(1,16,1,16), ZIndex=199,
@@ -371,13 +813,415 @@ function ShadowUI.new(config)
         end
     end)
 
-    return self
+    -- Build built-in Config tab
+    self:_BuildConfigTab()
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  CONFIG TAB (built-in)
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:_BuildConfigTab()
+    local T = self._T
+
+    -- Add ⚙ Config category at end of sidebar
+    local configCat = self:AddCategory("⚙ Config")
+    local sec = self:AddSection(configCat, "Settings")
+
+    -- We'll build the config panel manually (not via sec._left/right)
+    -- Auto-click config section so it renders
+    -- Actually we'll build it as a custom rendered section
+
+    -- ── Theme Section ──
+    self:SectionHeader(sec, "left", {text="UI Theme"})
+
+    local themeNames = {}
+    for k in pairs(THEMES) do themeNames[#themeNames+1] = k end
+    table.sort(themeNames)
+
+    local themeDrop = self:Dropdown(sec, "left", {
+        text="Theme",
+        options=themeNames,
+        default=self._themeName,
+        callback=function(v)
+            self:ApplyTheme(v)
+        end,
+    })
+
+    -- ── Config Section ──
+    self:SectionHeader(sec, "right", {text="Configuration"})
+
+    -- Config name display
+    self:Label(sec, "right", {
+        text="Active: default",
+        color=T.TextAccent,
+    })
+    self._configLabel = sec._right[#sec._right]
+
+    -- Config dropdown
+    local cfgDrop = self:Dropdown(sec, "right", {
+        text="Select Config",
+        options=self:_GetConfigList(),
+        default=self._activeConfig,
+        callback=function(v)
+            self._activeConfig = v
+        end,
+    })
+    self._cfgDropRef = cfgDrop
+
+    -- Buttons row
+    self:SectionHeader(sec, "right", {text="Actions"})
+
+    -- Save button
+    self:_ConfigButton(sec, "right", "💾  Save Config", function()
+        self:SaveConfig(self._activeConfig)
+        self:_Notify("Config saved: "..self._activeConfig)
+    end)
+
+    -- Load button
+    self:_ConfigButton(sec, "right", "📂  Load Config", function()
+        if self._cfgDropRef then
+            local name = self._cfgDropRef._getValue()
+            self:LoadConfig(name)
+            self:_Notify("Config loaded: "..name)
+        end
+    end)
+
+    -- New button
+    self:_ConfigButton(sec, "right", "✨  New Config", function()
+        self:_PromptInput("Config Name", "Enter config name...", function(name)
+            if name and name~="" then
+                local clean = SanitizeName(name)
+                self._activeConfig = clean
+                self:SaveConfig(clean)
+                self:_RefreshConfigDropdown()
+                self:_Notify("Created: "..clean)
+            end
+        end)
+    end)
+
+    -- Delete button
+    self:_ConfigButton(sec, "right", "🗑  Delete Config", function()
+        local name = self._activeConfig
+        if name == "default" then
+            self:_Notify("Cannot delete default config!")
+            return
+        end
+        local path = GetConfigPath(self._configTitle, name)
+        pcall(delfile, path)
+        self._activeConfig = "default"
+        self:_RefreshConfigDropdown()
+        self:_Notify("Deleted: "..name)
+    end)
+
+    -- Auto-load toggle
+    local autoTog = self:Toggle(sec, "right", {
+        text="Auto Load on Start",
+        default=self._autoLoad,
+        callback=function(v)
+            self._autoLoad = v
+        end,
+    })
+end
+
+function ShadowUI:_ConfigButton(sec, side, text, callback)
+    local T = self._T
+    local cfg = {type="configbtn", text=text, callback=callback}
+    local list = (side=="right") and sec._right or sec._left
+    list[#list+1] = cfg
+    if sec._active then
+        local panel = (side=="right") and self.RightScroll or self.LeftScroll
+        self:_BuildConfigBtn(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:_BuildConfigBtn(parent, ctrl)
+    local T = self._T
+    local Wrap = MkRow(parent, 28)
+
+    local Btn = New("TextButton",{
+        Parent=Wrap, BackgroundColor3=T.AccentDim,
+        Size=UDim2.new(1,0,0,22),
+        Position=UDim2.new(0,0,0,3),
+        Text=ctrl.text or "Button",
+        TextSize=11, Font=Enum.Font.GothamBold,
+        TextColor3=T.TextAccent,
+        AutoButtonColor=false, ZIndex=4,
+    })
+    Corn(5, Btn)
+    Stro(T.Border, 1, Btn)
+
+    Btn.MouseEnter:Connect(function()
+        Tw(Btn,{BackgroundColor3=T.Accent, TextColor3=T.White},.1)
+    end)
+    Btn.MouseLeave:Connect(function()
+        Tw(Btn,{BackgroundColor3=T.AccentDim, TextColor3=T.TextAccent},.1)
+    end)
+    Btn.MouseButton1Click:Connect(function()
+        if ctrl.callback then ctrl.callback() end
+    end)
+
+    return Wrap
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  NOTIFICATION
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:_Notify(msg)
+    if not self.Gui then return end
+    local T = self._T
+
+    local N = New("Frame",{
+        Parent=self.Gui,
+        BackgroundColor3=T.DropBg,
+        Position=UDim2.new(1,-260,1,-50),
+        Size=UDim2.new(0,240,0,36),
+        ZIndex=300,
+        BackgroundTransparency=1,
+    })
+    Corn(8, N)
+    Stro(T.Accent, 1, N)
+
+    -- Accent bar
+    New("Frame",{
+        Parent=N, BackgroundColor3=T.Accent,
+        Position=UDim2.new(0,0,0,6), Size=UDim2.new(0,3,1,-12),
+        ZIndex=302,
+    })
+
+    MkLbl(N, msg, 11, T.TextPri, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left, UDim2.new(0,12,0,0), UDim2.new(1,-18,1,0), 302)
+
+    Tw(N, {BackgroundTransparency=0}, 0.2)
+    Tw(N, {Position=UDim2.new(1,-260,1,-58)}, 0.3, Enum.EasingStyle.Back)
+
+    task.delay(2.5, function()
+        Tw(N, {BackgroundTransparency=1, Position=UDim2.new(1,-260,1,-44)}, 0.25)
+        task.wait(0.3)
+        N:Destroy()
+    end)
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  INPUT PROMPT (simple TextBox dialog)
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:_PromptInput(title, placeholder, onConfirm)
+    if not self.Gui then return end
+    local T = self._T
+
+    -- Overlay
+    local Ov = New("TextButton",{
+        Parent=self.Gui, BackgroundColor3=Color3.new(0,0,0),
+        BackgroundTransparency=0.6, Size=UDim2.new(1,0,1,0),
+        Text="", ZIndex=400,
+    })
+
+    local Dlg = New("Frame",{
+        Parent=self.Gui, BackgroundColor3=T.Bg,
+        Position=UDim2.new(0.5,-150,0.5,-65),
+        Size=UDim2.new(0,300,0,130),
+        ZIndex=401,
+    })
+    Corn(10, Dlg)
+    Stro(T.Accent, 1, Dlg)
+
+    MkLbl(Dlg, title, 13, T.TextPri, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center, UDim2.new(0,0,0,12), UDim2.new(1,0,0,20), 402)
+
+    local TB = New("TextBox",{
+        Parent=Dlg, BackgroundColor3=T.DropBg,
+        Position=UDim2.new(0,14,0,40), Size=UDim2.new(1,-28,0,28),
+        Font=Enum.Font.Gotham, PlaceholderText=placeholder,
+        PlaceholderColor3=T.TextDim, Text="",
+        TextColor3=T.TextPri, TextSize=12,
+        ClearTextOnFocus=false, ZIndex=402,
+    })
+    Corn(6, TB); Stro(T.Border, 1, TB)
+    Pad(8,8,0,0, TB)
+
+    local function Close()
+        Dlg:Destroy(); Ov:Destroy()
+    end
+
+    -- Confirm
+    local OkBtn = New("TextButton",{
+        Parent=Dlg, BackgroundColor3=T.Accent,
+        Position=UDim2.new(0,14,0,80), Size=UDim2.new(0.45,-7,0,28),
+        Text="Confirm", TextSize=12, Font=Enum.Font.GothamBold,
+        TextColor3=T.White, AutoButtonColor=false, ZIndex=402,
+    })
+    Corn(6, OkBtn)
+    OkBtn.MouseEnter:Connect(function() Tw(OkBtn,{BackgroundColor3=T.AccentBright},.1) end)
+    OkBtn.MouseLeave:Connect(function() Tw(OkBtn,{BackgroundColor3=T.Accent},.1) end)
+    OkBtn.MouseButton1Click:Connect(function()
+        local val = TB.Text
+        Close()
+        onConfirm(val)
+    end)
+
+    -- Cancel
+    local CxBtn = New("TextButton",{
+        Parent=Dlg, BackgroundColor3=T.DropBg,
+        Position=UDim2.new(0.55,0,0,80), Size=UDim2.new(0.45,-14,0,28),
+        Text="Cancel", TextSize=12, Font=Enum.Font.Gotham,
+        TextColor3=T.TextSec, AutoButtonColor=false, ZIndex=402,
+    })
+    Corn(6, CxBtn); Stro(T.Border,1,CxBtn)
+    CxBtn.MouseButton1Click:Connect(function() Close() end)
+    Ov.MouseButton1Click:Connect(function() Close() end)
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  THEME APPLICATION
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:ApplyTheme(name)
+    local theme = THEMES[name]
+    if not theme then return end
+    self._themeName = name
+    self._T = theme
+
+    if not self.Win then return end
+
+    -- Re-apply all colors to main UI elements
+    local T = theme
+    self.Win.BackgroundColor3 = T.Bg
+    self._winStro.Color = T.Border
+    self.Header.BackgroundColor3 = T.Header
+    self._accentLine.BackgroundColor3 = T.Accent
+    self.Sidebar.BackgroundColor3 = T.Sidebar
+    self.Content.BackgroundColor3 = T.Bg
+    self.TabBar.BackgroundColor3 = T.SubHeader
+    self.ToggleBtn.BackgroundColor3 = T.Accent
+
+    -- Update breadcrumb labels
+    self.BreadCat.TextColor3 = T.TextPri
+
+    -- Force re-render current section
+    if self._activeSec then
+        self:_Render(self._activeSec)
+    end
+end
+
+function ShadowUI:RegisterTheme(name, colors)
+    THEMES[name] = colors
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  CONFIG SAVE / LOAD
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ShadowUI:_GetConfigList()
+    local dir = GetConfigDir(self._configTitle)
+    local files = SafeList(dir)
+    local list = {"default"}
+    for _, f in ipairs(files) do
+        local name = f:match("([^/\\]+)%.json$")
+        if name and name ~= "_meta" and name ~= "default" then
+            list[#list+1] = name
+        end
+    end
+    return list
+end
+
+function ShadowUI:_RefreshConfigDropdown()
+    if self._cfgDropRef then
+        local newList = self:_GetConfigList()
+        self._cfgDropRef.options = newList
+        if self._cfgDropRef._setValue then
+            self._cfgDropRef._setValue(self._activeConfig)
+        end
+        -- Rebuild if active
+        if self._activeSec and self._activeSec._active then
+            self:_Render(self._activeSec)
+        end
+    end
+    if self._configLabel then
+        self._configLabel.text = "Active: "..self._activeConfig
+    end
+end
+
+function ShadowUI:SaveConfig(name)
+    name = name or self._activeConfig
+    local data = {
+        theme = self._themeName,
+        controls = {},
+    }
+
+    for _, ctrl in ipairs(self._controls) do
+        if ctrl.id and ctrl._getValue then
+            data.controls[ctrl.id] = ctrl._getValue()
+        end
+    end
+
+    local dir = GetConfigDir(self._configTitle)
+    EnsureDir(dir)
+
+    local ok, encoded = pcall(HttpService.JSONEncode, HttpService, data)
+    if ok then
+        SafeWrite(GetConfigPath(self._configTitle, name), encoded)
+        -- Save meta (last used)
+        local meta = {lastConfig = name, theme = self._themeName}
+        local mok, menc = pcall(HttpService.JSONEncode, HttpService, meta)
+        if mok then SafeWrite(GetMetaPath(self._configTitle), menc) end
+    end
+
+    self._activeConfig = name
+    if self._configLabel then
+        self._configLabel.text = "Active: "..name
+    end
+end
+
+function ShadowUI:LoadConfig(name)
+    name = name or "default"
+    local path = GetConfigPath(self._configTitle, name)
+    local raw = SafeRead(path)
+    if not raw then
+        if name ~= "default" then
+            self:_Notify("Config not found: "..name)
+        end
+        return
+    end
+
+    local ok, data = pcall(HttpService.JSONDecode, HttpService, raw)
+    if not ok then
+        self:_Notify("Config corrupted!")
+        return
+    end
+
+    -- Apply theme
+    if data.theme and THEMES[data.theme] then
+        self:ApplyTheme(data.theme)
+    end
+
+    -- Apply controls
+    if data.controls then
+        for _, ctrl in ipairs(self._controls) do
+            if ctrl.id and ctrl._setValue and data.controls[ctrl.id] ~= nil then
+                ctrl._setValue(data.controls[ctrl.id])
+            end
+        end
+    end
+
+    self._activeConfig = name
+    if self._configLabel then
+        self._configLabel.text = "Active: "..name
+    end
+
+    -- Save meta
+    local meta = {lastConfig = name, theme = self._themeName}
+    local mok, menc = pcall(HttpService.JSONEncode, HttpService, meta)
+    if mok then
+        local dir = GetConfigDir(self._configTitle)
+        EnsureDir(dir)
+        SafeWrite(GetMetaPath(self._configTitle), menc)
+    end
+end
+
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  BREADCRUMB
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Bread(catName, secName)
+    if not self.BreadFrame then return end
+    local T = self._T
     for _, c in ipairs(self.BreadFrame:GetChildren()) do
         if c ~= self.BreadCat and not c:IsA("UIListLayout") then c:Destroy() end
     end
@@ -390,10 +1234,14 @@ function ShadowUI:_Bread(catName, secName)
     end
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  ADD CATEGORY
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:AddCategory(name)
+    -- Wait for UI to be built
+    while not self.SideList do task.wait() end
+
+    local T = self._T
     local cat = {Name=name, _sections={}, _expanded=false, _ui=self}
 
     local Row = New("TextButton",{
@@ -411,7 +1259,7 @@ function ShadowUI:AddCategory(name)
         if not cat._expanded then Row.BackgroundTransparency=1 end
     end)
 
-    -- Ícone
+    -- Icon
     New("Frame",{
         Parent=Row, BackgroundTransparency=1,
         Position=UDim2.new(0,9,0.5,-8), Size=UDim2.new(0,16,0,16), ZIndex=6,
@@ -456,10 +1304,13 @@ function ShadowUI:AddCategory(name)
     return cat
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  ADD SECTION
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:AddSection(cat, name)
+    while not self.SideList do task.wait() end
+
+    local T = self._T
     local sec = {Name=name, _cat=cat, _active=false, _left={}, _right={}, _ui=self}
 
     local Btn = New("TextButton",{
@@ -469,7 +1320,6 @@ function ShadowUI:AddSection(cat, name)
     })
     Corn(3, Btn)
 
-    -- Barra lateral accent
     local AccBar = New("Frame",{
         Parent=Btn, BackgroundColor3=T.Accent,
         Position=UDim2.new(0,0,0.2,0), Size=UDim2.new(0,2,0.6,0),
@@ -477,7 +1327,6 @@ function ShadowUI:AddSection(cat, name)
     })
     Corn(1, AccBar)
 
-    -- Diamond
     local Dia = New("Frame",{
         Parent=Btn, BackgroundColor3=T.AccentDim,
         Position=UDim2.new(0,18,0.5,-4), Size=UDim2.new(0,8,0,8),
@@ -523,10 +1372,11 @@ function ShadowUI:AddSection(cat, name)
     return sec
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  RENDER
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Render(sec)
+    if not self.LeftScroll then return end
     for _, p in ipairs({self.LeftScroll,self.RightScroll}) do
         for _, c in ipairs(p:GetChildren()) do
             if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
@@ -535,6 +1385,8 @@ function ShadowUI:_Render(sec)
     for _, c in ipairs(self.TabList:GetChildren()) do
         if not c:IsA("UIListLayout") then c:Destroy() end
     end
+
+    local T = self._T
 
     for _, s in ipairs(sec._cat._sections) do
         local act=(s==sec)
@@ -563,21 +1415,23 @@ function ShadowUI:_Render(sec)
     for _, ctrl in ipairs(sec._right) do self:_Build(self.RightScroll, ctrl) end
 end
 
--- ──────────────────────────────────────────────
---  BUILD
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  BUILD DISPATCHER
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Build(p, ctrl)
-    if ctrl.type=="toggle"   then return self:_Toggle(p,ctrl)   end
-    if ctrl.type=="slider"   then return self:_Slider(p,ctrl)   end
-    if ctrl.type=="dropdown" then return self:_Dropdown(p,ctrl) end
-    if ctrl.type=="header"   then return self:_Header(p,ctrl)   end
-    if ctrl.type=="label"    then return self:_Label(p,ctrl)    end
+    if ctrl.type=="toggle"    then return self:_Toggle(p,ctrl)      end
+    if ctrl.type=="slider"    then return self:_Slider(p,ctrl)      end
+    if ctrl.type=="dropdown"  then return self:_Dropdown(p,ctrl)    end
+    if ctrl.type=="header"    then return self:_Header(p,ctrl)      end
+    if ctrl.type=="label"     then return self:_Label(p,ctrl)       end
+    if ctrl.type=="configbtn" then return self:_BuildConfigBtn(p,ctrl) end
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  TOGGLE
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Toggle(parent, ctrl)
+    local T = self._T
     local val = ctrl._val~=nil and ctrl._val or (ctrl.default or false)
     local row = MkRow(parent, 30)
 
@@ -610,7 +1464,6 @@ function ShadowUI:_Toggle(parent, ctrl)
         Enum.Font.Gotham, Enum.TextXAlignment.Left,
         UDim2.new(0,0,0,0), UDim2.new(1,rOff,1,0), 4)
 
-    -- Track
     local Tr=New("Frame",{
         Parent=row, BackgroundColor3=val and T.ToggleOn or T.ToggleOff,
         Position=UDim2.new(1,-30,0.5,-7), Size=UDim2.new(0,26,0,14), ZIndex=4,
@@ -637,10 +1490,11 @@ function ShadowUI:_Toggle(parent, ctrl)
     return row
 end
 
--- ──────────────────────────────────────────────
---  SLIDER — fix: usa RunService para drag suave
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+--  SLIDER  (corrigido — drag fluido)
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Slider(parent, ctrl)
+    local T   = self._T
     local mn  = ctrl.min    or 0
     local mx  = ctrl.max    or 100
     local stp = ctrl.step   or 0
@@ -657,7 +1511,6 @@ function ShadowUI:_Slider(parent, ctrl)
     local Wrap = MkRow(parent, 44)
     Corn(4, Wrap)
 
-    -- Top row: nome + valor
     local TR = New("Frame",{
         Parent=Wrap, BackgroundTransparency=1,
         Position=UDim2.new(0,0,0,3), Size=UDim2.new(1,0,0,15), ZIndex=3,
@@ -669,20 +1522,11 @@ function ShadowUI:_Slider(parent, ctrl)
         Enum.Font.GothamBold, Enum.TextXAlignment.Right,
         UDim2.new(0.68,0,0,0), UDim2.new(0.32,0,1,0), 3)
 
-    -- Track
     local Trk = New("Frame",{
         Parent=Wrap, BackgroundColor3=T.SliderTrack,
         Position=UDim2.new(0,0,0,26), Size=UDim2.new(1,0,0,4), ZIndex=3,
     })
     Corn(2, Trk)
-    -- Glow sutil no track
-    New("UIGradient",{
-        Color=ColorSequence.new{
-            ColorSequenceKeypoint.new(0,T.Border),
-            ColorSequenceKeypoint.new(1,T.SliderTrack),
-        },
-        Parent=Trk,
-    })
 
     local pct = (val-mn)/(mx-mn)
 
@@ -702,13 +1546,12 @@ function ShadowUI:_Slider(parent, ctrl)
     local function Set(v)
         v=Snap(v); val=v; ctrl._val=v
         local p=(v-mn)/(mx-mn)
-        Fill.Size     = UDim2.new(p,0,1,0)
-        Th.Position   = UDim2.new(p,-6,0.5,-6)
-        VL.Text       = string.format(fmt,v)
+        Fill.Size   = UDim2.new(p,0,1,0)
+        Th.Position = UDim2.new(p,-6,0.5,-6)
+        VL.Text     = string.format(fmt,v)
         if ctrl.callback then ctrl.callback(v) end
     end
 
-    -- ── DRAG com InputBegan no Track + captura global ──
     local dragging = false
 
     local function GetPct(absX)
@@ -718,7 +1561,7 @@ function ShadowUI:_Slider(parent, ctrl)
         return math.clamp((absX - ap) / as, 0, 1)
     end
 
-    -- Área de hit maior que o track visual (mais fácil de clicar)
+    -- Hit zone maior para facilitar clique
     local HitZone = New("TextButton",{
         Parent=Trk, BackgroundTransparency=1,
         Position=UDim2.new(0,0,0.5,-10),
@@ -726,23 +1569,23 @@ function ShadowUI:_Slider(parent, ctrl)
         Text="", ZIndex=8,
     })
 
-    HitZone.MouseButton1Down:Connect(function(x,y)
-        dragging=true
-        Tw(Th,{Size=UDim2.new(0,14,0,14), Position=UDim2.new(GetPct(x),-7,0.5,-7)},.06)
+    HitZone.MouseButton1Down:Connect(function(x, _y)
+        dragging = true
         Set(mn + GetPct(x)*(mx-mn))
+        Tw(Th,{Size=UDim2.new(0,14,0,14), Position=UDim2.new(GetPct(x),-7,0.5,-7)},.06)
     end)
 
+    -- Captura movimento global enquanto dragging
     UserInputService.InputChanged:Connect(function(i)
         if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
             Set(mn + GetPct(i.Position.X)*(mx-mn))
-            Th.Position = UDim2.new(GetPct(i.Position.X),-6,0.5,-6)
         end
     end)
 
     UserInputService.InputEnded:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 and dragging then
-            dragging=false
-            Tw(Th,{Size=UDim2.new(0,12,0,12)},.06)
+            dragging = false
+            Tw(Th,{Size=UDim2.new(0,12,0,12), Position=UDim2.new(GetPct(HitZone.AbsolutePosition.X),-6,0.5,-6)},.06)
         end
     end)
 
@@ -750,10 +1593,11 @@ function ShadowUI:_Slider(parent, ctrl)
     return Wrap
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  DROPDOWN
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Dropdown(parent, ctrl)
+    local T = self._T
     local opts=ctrl.options or {}
     local val=ctrl._val~=nil and ctrl._val or (ctrl.default or opts[1])
 
@@ -798,15 +1642,14 @@ function ShadowUI:_Dropdown(parent, ctrl)
     OBtn.MouseLeave:Connect(function() if not open then Tw(Box,{BackgroundColor3=T.DropBg},.08) end end)
 
     OBtn.MouseButton1Click:Connect(function()
-        -- Fecha qualquer dropdown aberto
         if _dropClose and _dropClose~=Close then _dropClose() end
-
         if open then Close(); return end
         open=true
         _dropClose=Close
 
+        local currentOpts = ctrl.options or opts
         local itemH=22
-        local listH=#opts*itemH+6
+        local listH=#currentOpts*itemH+6
 
         DropF=New("Frame",{
             Parent=self.Gui,
@@ -816,7 +1659,6 @@ function ShadowUI:_Dropdown(parent, ctrl)
         })
         Corn(6,DropF); Stro(T.Accent,1,DropF)
 
-        -- Sombra no dropdown
         New("ImageLabel",{
             Parent=DropF, BackgroundTransparency=1,
             Position=UDim2.new(0,-8,0,-8), Size=UDim2.new(1,16,1,16), ZIndex=49,
@@ -836,7 +1678,7 @@ function ShadowUI:_Dropdown(parent, ctrl)
         List(DropF,nil,0)
         Pad(3,3,3,3,DropF)
 
-        for _, opt in ipairs(opts) do
+        for _, opt in ipairs(currentOpts) do
             local isS=(opt==val)
             local Item=New("TextButton",{
                 Parent=DropF,
@@ -866,36 +1708,34 @@ function ShadowUI:_Dropdown(parent, ctrl)
                 end
             end)
             Item.MouseButton1Click:Connect(function()
-                -- Delay mínimo para não propagar o clique abaixo
                 task.defer(function() SetVal(opt) end)
             end)
         end
 
-        -- Overlay para fechar ao clicar fora
         local Ov=New("TextButton",{
             Parent=self.Gui, BackgroundTransparency=1,
             Size=UDim2.new(1,0,1,0), Text="", ZIndex=48,
         })
-        Ov.MouseButton1Click:Connect(function()
-            Close(); Ov:Destroy()
-        end)
-        -- Garante que o overlay seja destruído quando o dropdown fechar
         local oldClose=Close
         Close = function()
             oldClose()
             if Ov and Ov.Parent then Ov:Destroy() end
         end
         _dropClose=Close
+        Ov.MouseButton1Click:Connect(function()
+            Close()
+        end)
     end)
 
     ctrl._setValue=SetVal; ctrl._getValue=function() return val end
     return Wrap
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  SECTION HEADER
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Header(parent, ctrl)
+    local T = self._T
     local row=MkRow(parent,28)
     local rOff=0
 
@@ -940,7 +1780,6 @@ function ShadowUI:_Header(parent, ctrl)
     MkLbl(row, ctrl.text or "", 11, T.TextSec, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, nil, UDim2.new(1,-(rOff+4),1,0), 3)
 
-    -- Linha separadora
     New("Frame",{
         Parent=row, BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1), Size=UDim2.new(1,0,0,1), ZIndex=3,
@@ -949,19 +1788,20 @@ function ShadowUI:_Header(parent, ctrl)
     return row
 end
 
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  LABEL
--- ──────────────────────────────────────────────
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function ShadowUI:_Label(parent, ctrl)
+    local T = self._T
     local row=MkRow(parent,20)
     MkLbl(row, ctrl.text or "", 11, ctrl.color or T.TextSec, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, nil, UDim2.new(1,0,1,0), 3)
     return row
 end
 
--- ══════════════════════════════════════════════
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 --  PUBLIC API
--- ══════════════════════════════════════════════
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 local function Add(sec, side, cfg)
     local list=(side=="right") and sec._right or sec._left
     list[#list+1]=cfg
@@ -973,11 +1813,26 @@ local function Add(sec, side, cfg)
     return cfg
 end
 
-function ShadowUI:Toggle(s,side,cfg)      cfg=cfg or{};cfg.type="toggle";   return Add(s,side,cfg) end
-function ShadowUI:Slider(s,side,cfg)      cfg=cfg or{};cfg.type="slider";   return Add(s,side,cfg) end
-function ShadowUI:Dropdown(s,side,cfg)    cfg=cfg or{};cfg.type="dropdown"; return Add(s,side,cfg) end
+function ShadowUI:Toggle(s,side,cfg)
+    cfg=cfg or {}; cfg.type="toggle"
+    if cfg.id then self._controls[#self._controls+1]=cfg end
+    return Add(s,side,cfg)
+end
+
+function ShadowUI:Slider(s,side,cfg)
+    cfg=cfg or {}; cfg.type="slider"
+    if cfg.id then self._controls[#self._controls+1]=cfg end
+    return Add(s,side,cfg)
+end
+
+function ShadowUI:Dropdown(s,side,cfg)
+    cfg=cfg or {}; cfg.type="dropdown"
+    if cfg.id then self._controls[#self._controls+1]=cfg end
+    return Add(s,side,cfg)
+end
+
 function ShadowUI:SectionHeader(s,side,cfg) cfg=cfg or{};cfg.type="header"; return Add(s,side,cfg) end
-function ShadowUI:Label(s,side,cfg)       cfg=cfg or{};cfg.type="label";    return Add(s,side,cfg) end
+function ShadowUI:Label(s,side,cfg)         cfg=cfg or{};cfg.type="label";  return Add(s,side,cfg) end
 
 function ShadowUI:BindToggleKey(key)
     UserInputService.InputBegan:Connect(function(i,gpe)
@@ -988,8 +1843,10 @@ function ShadowUI:BindToggleKey(key)
     end)
 end
 
-function ShadowUI:Destroy() self.Gui:Destroy() end
+function ShadowUI:Destroy()
+    if self.Gui then self.Gui:Destroy() end
+end
 
--- ══════════════════════════════════════════════
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 return ShadowUI
--- ══════════════════════════════════════════════
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
