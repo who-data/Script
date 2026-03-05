@@ -1,0 +1,530 @@
+--[[
+    ╔══════════════════════════════════════════════════════════════╗
+    ║              SHADOW UI LIBRARY  v1.0                        ║
+    ║         Dark-themed config panel UI library                 ║
+    ╚══════════════════════════════════════════════════════════════╝
+--]]
+
+local ShadowUI = {}
+ShadowUI.__index = ShadowUI
+
+local Players            = game:GetService("Players")
+local UserInputService   = game:GetService("UserInputService")
+local TweenService       = game:GetService("TweenService")
+
+local LocalPlayer        = Players.LocalPlayer
+local PlayerGui          = LocalPlayer:WaitForChild("PlayerGui")
+
+local Theme = {
+    Background      = Color3.fromRGB(18,  18,  20),
+    Sidebar         = Color3.fromRGB(22,  22,  25),
+    Panel           = Color3.fromRGB(26,  26,  29),
+    PanelAlt        = Color3.fromRGB(30,  30,  34),
+    Border          = Color3.fromRGB(45,  45,  50),
+    Accent          = Color3.fromRGB(255, 255, 255),
+    AccentDim       = Color3.fromRGB(120, 120, 130),
+    ToggleOn        = Color3.fromRGB(60,  180, 100),
+    ToggleOff       = Color3.fromRGB(60,  60,  65),
+    SliderTrack     = Color3.fromRGB(50,  50,  55),
+    SliderFill      = Color3.fromRGB(200, 200, 210),
+    SliderThumb     = Color3.fromRGB(230, 230, 240),
+    TextPrimary     = Color3.fromRGB(220, 220, 225),
+    TextSecondary   = Color3.fromRGB(100, 100, 110),
+    TextDisabled    = Color3.fromRGB(60,  60,  68),
+    Dropdown        = Color3.fromRGB(32,  32,  36),
+    DropdownHover   = Color3.fromRGB(40,  40,  45),
+    HeaderBg        = Color3.fromRGB(20,  20,  23),
+    White           = Color3.fromRGB(255, 255, 255),
+}
+
+local function Create(class, props, children)
+    local obj = Instance.new(class)
+    for k, v in pairs(props) do
+        if k ~= "Parent" then obj[k] = v end
+    end
+    if children then
+        for _, child in ipairs(children) do child.Parent = obj end
+    end
+    if props.Parent then obj.Parent = props.Parent end
+    return obj
+end
+
+local function Tween(obj, goal, duration, style, direction)
+    TweenService:Create(obj, TweenInfo.new(
+        duration or 0.15,
+        style    or Enum.EasingStyle.Quad,
+        direction or Enum.EasingDirection.Out
+    ), goal):Play()
+end
+
+local function MakeDraggable(frame, handle)
+    handle = handle or frame
+    local dragging, dragInput, dragStart, startPos
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging  = true
+            dragStart = input.Position
+            startPos  = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    handle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+local function Separator(parent, offsetY)
+    Create("Frame", {
+        Parent           = parent,
+        BackgroundColor3 = Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 0, offsetY or 0),
+        Size             = UDim2.new(1, 0, 0, 1),
+    })
+end
+
+function ShadowUI.new(config)
+    config = config or {}
+    local self = setmetatable({}, ShadowUI)
+
+    self.Title    = config.Title    or "Shadow UI"
+    self.Subtitle = config.Subtitle or "Welcome Back"
+    self.Username = config.Username or LocalPlayer.Name
+    self.Expiry   = config.Expiry   or "∞"
+    self._sidebar = {}
+    self._visible = true
+
+    self.ScreenGui = Create("ScreenGui", {
+        Name           = "ShadowUILib",
+        Parent         = PlayerGui,
+        ResetOnSpawn   = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        DisplayOrder   = 100,
+    })
+
+    self.Window = Create("Frame", {
+        Name             = "Window",
+        Parent           = self.ScreenGui,
+        BackgroundColor3 = Theme.Background,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0.5, -450, 0.5, -230),
+        Size             = UDim2.new(0, 900, 0, 460),
+        ClipsDescendants = true,
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = self.Window })
+    Create("UIStroke", { Color = Theme.Border, Thickness = 1, Parent = self.Window })
+    Create("ImageLabel", {
+        Name                 = "Shadow",
+        Parent               = self.Window,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, -15, 0, -15),
+        Size                 = UDim2.new(1, 30, 1, 30),
+        ZIndex               = 0,
+        Image                = "rbxassetid://6014261993",
+        ImageColor3          = Color3.fromRGB(0, 0, 0),
+        ImageTransparency    = 0.5,
+        ScaleType            = Enum.ScaleType.Slice,
+        SliceCenter          = Rect.new(49, 49, 450, 450),
+    })
+
+    MakeDraggable(self.Window, self.Window)
+
+    self.Header = Create("Frame", {
+        Name             = "Header",
+        Parent           = self.Window,
+        BackgroundColor3 = Theme.HeaderBg,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 40),
+    })
+    Separator(self.Header, 39)
+
+    Create("Frame", {
+        Parent           = self.Header,
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 10, 0.5, -8),
+        Size             = UDim2.new(0, 16, 0, 16),
+    }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+
+    self.BreadcrumbLabel = Create("TextLabel", {
+        Name                 = "Breadcrumb",
+        Parent               = self.Header,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 35, 0, 0),
+        Size                 = UDim2.new(0.5, 0, 1, 0),
+        Font                 = Enum.Font.Gotham,
+        Text                 = self.Title,
+        TextColor3           = Theme.TextPrimary,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+    })
+
+    Create("TextLabel", {
+        Parent               = self.Header,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 0, 0, 0),
+        Size                 = UDim2.new(1, -12, 1, 0),
+        Font                 = Enum.Font.GothamBold,
+        Text                 = self.Subtitle .. ", " .. self.Username .. "!\nDays Until Expiry: " .. self.Expiry,
+        TextColor3           = Theme.TextPrimary,
+        TextSize             = 12,
+        TextXAlignment       = Enum.TextXAlignment.Right,
+        TextYAlignment       = Enum.TextYAlignment.Center,
+        LineHeight           = 1.4,
+    })
+
+    self.Sidebar = Create("Frame", {
+        Name             = "Sidebar",
+        Parent           = self.Window,
+        BackgroundColor3 = Theme.Sidebar,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 0, 0, 40),
+        Size             = UDim2.new(0, 200, 1, -40),
+    })
+
+    local SearchBar = Create("Frame", {
+        Parent           = self.Sidebar,
+        BackgroundColor3 = Theme.Panel,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 8, 0, 8),
+        Size             = UDim2.new(1, -16, 0, 28),
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = SearchBar })
+    Create("TextBox", {
+        Parent            = SearchBar,
+        BackgroundTransparency = 1,
+        Position          = UDim2.new(0, 8, 0, 0),
+        Size              = UDim2.new(1, -8, 1, 0),
+        Font              = Enum.Font.Gotham,
+        PlaceholderText   = "Search",
+        PlaceholderColor3 = Theme.TextSecondary,
+        Text              = "",
+        TextColor3        = Theme.TextPrimary,
+        TextSize          = 12,
+        ClearTextOnFocus  = false,
+    })
+
+    self.SidebarList = Create("ScrollingFrame", {
+        Name                 = "SidebarList",
+        Parent               = self.Sidebar,
+        BackgroundTransparency = 1,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 0, 0, 44),
+        Size                 = UDim2.new(1, 0, 1, -44),
+        ScrollBarThickness   = 2,
+        ScrollBarImageColor3 = Theme.Border,
+        CanvasSize           = UDim2.new(0, 0, 0, 0),
+    })
+    local SidebarLayout = Create("UIListLayout", {
+        Parent    = self.SidebarList,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding   = UDim.new(0, 2),
+    })
+    SidebarLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.SidebarList.CanvasSize = UDim2.new(0, 0, 0, SidebarLayout.AbsoluteContentSize.Y + 8)
+    end)
+
+    self.ContentHolder = Create("Frame", {
+        Name             = "ContentHolder",
+        Parent           = self.Window,
+        BackgroundColor3 = Theme.Background,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 200, 0, 40),
+        Size             = UDim2.new(1, -200, 1, -40),
+    })
+
+    self.TabBar = Create("Frame", {
+        Name             = "TabBar",
+        Parent           = self.ContentHolder,
+        BackgroundColor3 = Theme.HeaderBg,
+        BorderSizePixel  = 0,
+        Size             = UDim2.new(1, 0, 0, 30),
+    })
+    Separator(self.TabBar, 29)
+
+    self.TabBarList = Create("Frame", {
+        Parent               = self.TabBar,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 8, 0, 0),
+        Size                 = UDim2.new(1, -8, 1, 0),
+    })
+    Create("UIListLayout", {
+        Parent            = self.TabBarList,
+        FillDirection     = Enum.FillDirection.Horizontal,
+        SortOrder         = Enum.SortOrder.LayoutOrder,
+        Padding           = UDim.new(0, 4),
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+    })
+
+    self.PanelsContainer = Create("Frame", {
+        Name                 = "PanelsContainer",
+        Parent               = self.ContentHolder,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 0, 0, 30),
+        Size                 = UDim2.new(1, 0, 1, -30),
+    })
+
+    self.LeftPanel = Create("ScrollingFrame", {
+        Name                 = "LeftPanel",
+        Parent               = self.PanelsContainer,
+        BackgroundTransparency = 1,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0, 0, 0, 0),
+        Size                 = UDim2.new(0.5, -1, 1, 0),
+        ScrollBarThickness   = 2,
+        ScrollBarImageColor3 = Theme.Border,
+        CanvasSize           = UDim2.new(0, 0, 0, 0),
+    })
+    local LeftLayout = Create("UIListLayout", {
+        Parent    = self.LeftPanel,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding   = UDim.new(0, 0),
+    })
+    Create("UIPadding", {
+        PaddingLeft  = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        PaddingTop   = UDim.new(0, 6),
+        Parent       = self.LeftPanel
+    })
+    LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.LeftPanel.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 12)
+    end)
+
+    Create("Frame", {
+        Parent           = self.PanelsContainer,
+        BackgroundColor3 = Theme.Border,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0.5, -1, 0, 0),
+        Size             = UDim2.new(0, 1, 1, 0),
+    })
+
+    self.RightPanel = Create("ScrollingFrame", {
+        Name                 = "RightPanel",
+        Parent               = self.PanelsContainer,
+        BackgroundTransparency = 1,
+        BorderSizePixel      = 0,
+        Position             = UDim2.new(0.5, 1, 0, 0),
+        Size                 = UDim2.new(0.5, -1, 1, 0),
+        ScrollBarThickness   = 2,
+        ScrollBarImageColor3 = Theme.Border,
+        CanvasSize           = UDim2.new(0, 0, 0, 0),
+    })
+    local RightLayout = Create("UIListLayout", {
+        Parent    = self.RightPanel,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding   = UDim.new(0, 0),
+    })
+    Create("UIPadding", {
+        PaddingLeft  = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        PaddingTop   = UDim.new(0, 6),
+        Parent       = self.RightPanel
+    })
+    RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.RightPanel.CanvasSize = UDim2.new(0, 0, 0, RightLayout.AbsoluteContentSize.Y + 12)
+    end)
+
+    self._activeSection = nil
+    return self
+end
+
+function ShadowUI:AddCategory(name)
+    local cat = { Name = name, _sections = {}, _expanded = false, _self = self }
+
+    local Row = Create("TextButton", {
+        Parent               = self.SidebarList,
+        BackgroundTransparency = 1,
+        Size                 = UDim2.new(1, 0, 0, 30),
+        Font                 = Enum.Font.GothamBold,
+        Text                 = "",
+        AutoButtonColor      = false,
+    })
+    Create("Frame", {
+        Parent           = Row,
+        BackgroundColor3 = Theme.White,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, 10, 0.5, -5),
+        Size             = UDim2.new(0, 10, 0, 10),
+    }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+    Create("TextLabel", {
+        Parent               = Row,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, 28, 0, 0),
+        Size                 = UDim2.new(1, -28, 1, 0),
+        Font                 = Enum.Font.GothamBold,
+        Text                 = name,
+        TextColor3           = Theme.TextPrimary,
+        TextSize             = 13,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+    })
+
+    local SectionsFrame = Create("Frame", {
+        Parent               = self.SidebarList,
+        BackgroundTransparency = 1,
+        Size                 = UDim2.new(1, 0, 0, 0),
+        ClipsDescendants     = true,
+        Visible              = false,
+    })
+    local SectionsList = Create("UIListLayout", {
+        Parent    = SectionsFrame,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding   = UDim.new(0, 0),
+    })
+
+    cat._row           = Row
+    cat._sectionsFrame = SectionsFrame
+    cat._sectionsList  = SectionsList
+
+    Row.MouseButton1Click:Connect(function()
+        cat._expanded = not cat._expanded
+        if cat._expanded then
+            SectionsFrame.Size    = UDim2.new(1, 0, 0, SectionsList.AbsoluteContentSize.Y)
+            SectionsFrame.Visible = true
+            if #cat._sections > 0 and not cat._sections[1]._active then
+                cat._sections[1]._button.MouseButton1Click:Fire()
+            end
+        else
+            SectionsFrame.Visible = false
+            SectionsFrame.Size    = UDim2.new(1, 0, 0, 0)
+        end
+    end)
+
+    self._sidebar[#self._sidebar + 1] = cat
+    return cat
+end
+
+function ShadowUI:AddSection(category, name)
+    local sec = { Name = name, _cat = category, _active = false, _left = {}, _right = {}, _self = self }
+    local indent = 22
+
+    local Btn = Create("TextButton", {
+        Parent               = category._sectionsFrame,
+        BackgroundTransparency = 1,
+        Size                 = UDim2.new(1, 0, 0, 26),
+        Font                 = Enum.Font.Gotham,
+        Text                 = "",
+        AutoButtonColor      = false,
+    })
+    local Diamond = Create("Frame", {
+        Parent           = Btn,
+        BackgroundColor3 = Theme.AccentDim,
+        BorderSizePixel  = 0,
+        Position         = UDim2.new(0, indent, 0.5, -4),
+        Size             = UDim2.new(0, 8, 0, 8),
+        Rotation         = 45,
+    })
+    local Label = Create("TextLabel", {
+        Parent               = Btn,
+        BackgroundTransparency = 1,
+        Position             = UDim2.new(0, indent + 14, 0, 0),
+        Size                 = UDim2.new(1, -(indent + 14), 1, 0),
+        Font                 = Enum.Font.Gotham,
+        Text                 = name,
+        TextColor3           = Theme.TextSecondary,
+        TextSize             = 12,
+        TextXAlignment       = Enum.TextXAlignment.Left,
+    })
+
+    sec._button  = Btn
+    sec._label   = Label
+    sec._diamond = Diamond
+
+    Btn.MouseButton1Click:Connect(function()
+        if self._activeSection then
+            self._activeSection._active              = false
+            self._activeSection._label.TextColor3    = Theme.TextSecondary
+            self._activeSection._diamond.BackgroundColor3 = Theme.AccentDim
+        end
+        sec._active              = true
+        Label.TextColor3         = Theme.TextPrimary
+        Diamond.BackgroundColor3 = Theme.White
+        self._activeSection      = sec
+        self.BreadcrumbLabel.Text = category.Name .. "  ›  " .. name
+        self:_RefreshPanels(sec)
+    end)
+
+    category._sections[#category._sections + 1] = sec
+    local total = category._sectionsList.AbsoluteContentSize.Y + 26
+    category._sectionsFrame.Size = UDim2.new(1, 0, 0, total)
+
+    return sec
+end
+
+function ShadowUI:_RefreshPanels(section)
+    for _, c in ipairs(self.LeftPanel:GetChildren()) do
+        if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
+    end
+    for _, c in ipairs(self.RightPanel:GetChildren()) do
+        if c:IsA("Frame") or c:IsA("TextButton") then c:Destroy() end
+    end
+    for _, c in ipairs(self.TabBarList:GetChildren()) do
+        if not c:IsA("UIListLayout") then c:Destroy() end
+    end
+
+    for _, s in ipairs(section._cat._sections) do
+        local isActive = (s.Name == section.Name)
+        local DiamondFrame = Create("Frame", {
+            Parent               = self.TabBarList,
+            BackgroundTransparency = 1,
+            Size                 = UDim2.new(0, 80, 1, 0),
+        })
+        Create("Frame", {
+            Parent           = DiamondFrame,
+            BackgroundColor3 = isActive and Theme.White or Theme.AccentDim,
+            BorderSizePixel  = 0,
+            Position         = UDim2.new(0, 2, 0.5, -4),
+            Size             = UDim2.new(0, 7, 0, 7),
+            Rotation         = 45,
+        })
+        Create("TextLabel", {
+            Parent               = DiamondFrame,
+            BackgroundTransparency = 1,
+            Position             = UDim2.new(0, 14, 0, 0),
+            Size                 = UDim2.new(1, -14, 1, 0),
+            Font                 = Enum.Font.Gotham,
+            Text                 = s.Name,
+            TextColor3           = isActive and Theme.TextPrimary or Theme.TextSecondary,
+            TextSize             = 12,
+            TextXAlignment       = Enum.TextXAlignment.Left,
+        })
+    end
+
+    for _, ctrl in ipairs(section._left)  do self:_BuildControl(self.LeftPanel,  ctrl) end
+    for _, ctrl in ipairs(section._right) do self:_BuildControl(self.RightPanel, ctrl) end
+end
+
+function ShadowUI:_BuildControl(parent, ctrl)
+    if ctrl.type == "toggle"         then return self:_BuildToggle(parent, ctrl)        end
+    if ctrl.type == "slider"         then return self:_BuildSlider(parent, ctrl)        end
+    if ctrl.type == "dropdown"       then return self:_BuildDropdown(parent, ctrl)      end
+    if ctrl.type == "section_header" then return self:_BuildSectionHeader(parent, ctrl) end
+    if ctrl.type == "label"          then return self:_BuildLabel(parent, ctrl)         end
+end
+
+local function MakeRow(parent, height)
+    return Create("Frame", {
+        Parent               = parent,
+        BackgroundTransparency = 1,
+        BorderSizePixel      = 0,
+        Size                 = UDim2.new(1, 0, 0, height or 36),
+    })
+end
+
+function ShadowUI:_BuildToggle(parent, ctrl)
+    local row   = MakeRow(parent, 36)
+    local value = ctrl.default or false
+
+    Create("TextLabel", {
+        Parent               = row,
+        BackgroundTra
