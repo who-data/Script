@@ -1,16 +1,16 @@
 --[[
     ╔══════════════════════════════════════════════════════════════╗
-    ║              SHADOW UI LIBRARY  v5.0                        ║
-    ║         Dark-themed config panel UI library                 ║
+    ║              SHADOW UI LIBRARY  v6.0                        ║
     ╚══════════════════════════════════════════════════════════════╝
 --]]
 
 local ShadowUI = {}
 ShadowUI.__index = ShadowUI
 
-local Players            = game:GetService("Players")
-local UserInputService   = game:GetService("UserInputService")
-local TweenService       = game:GetService("TweenService")
+local Players          = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService     = game:GetService("TweenService")
+local RunService       = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
@@ -19,39 +19,40 @@ local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
 --  THEME
 -- ──────────────────────────────────────────────
 local T = {
-    Bg          = Color3.fromRGB(13,  13,  16),
-    Sidebar     = Color3.fromRGB(17,  17,  21),
-    Header      = Color3.fromRGB(15,  15,  19),
-    Row         = Color3.fromRGB(20,  20,  25),
-    RowHover    = Color3.fromRGB(26,  26,  32),
-    Border      = Color3.fromRGB(34,  34,  42),
-    BorderLight = Color3.fromRGB(44,  44,  54),
+    Bg          = Color3.fromRGB(11,  11,  14),
+    Sidebar     = Color3.fromRGB(15,  15,  19),
+    Header      = Color3.fromRGB(13,  13,  17),
+    SubHeader   = Color3.fromRGB(14,  14,  18),
+    RowHover    = Color3.fromRGB(24,  24,  30),
+    Border      = Color3.fromRGB(32,  32,  42),
+    BorderMid   = Color3.fromRGB(44,  44,  56),
 
-    Accent      = Color3.fromRGB(99,  102, 241),   -- índigo suave
-    AccentDim   = Color3.fromRGB(75,  75,  95),
+    Accent      = Color3.fromRGB(108, 99,  255),
+    AccentBright= Color3.fromRGB(140, 130, 255),
+    AccentDim   = Color3.fromRGB(60,  58,  90),
+    AccentGlow  = Color3.fromRGB(108, 99,  255),
 
-    ToggleOn    = Color3.fromRGB(52,  168, 88),
-    ToggleOff   = Color3.fromRGB(44,  44,  55),
+    ToggleOn    = Color3.fromRGB(48,  186, 102),
+    ToggleOnGlow= Color3.fromRGB(48,  186, 102),
+    ToggleOff   = Color3.fromRGB(38,  38,  50),
 
-    SliderTrack = Color3.fromRGB(34,  34,  44),
-    SliderFill  = Color3.fromRGB(99,  102, 241),
-    SliderThumb = Color3.fromRGB(220, 220, 235),
+    SliderTrack = Color3.fromRGB(28,  28,  38),
+    SliderFill  = Color3.fromRGB(108, 99,  255),
+    SliderThumb = Color3.fromRGB(235, 235, 248),
 
-    DropBg      = Color3.fromRGB(20,  20,  26),
-    DropHover   = Color3.fromRGB(30,  30,  38),
-    DropBorder  = Color3.fromRGB(44,  44,  56),
+    DropBg      = Color3.fromRGB(17,  17,  22),
+    DropHover   = Color3.fromRGB(26,  26,  34),
 
-    TextPri     = Color3.fromRGB(215, 215, 225),
-    TextSec     = Color3.fromRGB(90,  90,  110),
-    TextDim     = Color3.fromRGB(55,  55,  68),
-    TextAccent  = Color3.fromRGB(140, 142, 255),
+    TextPri     = Color3.fromRGB(220, 220, 232),
+    TextSec     = Color3.fromRGB(85,  85,  108),
+    TextDim     = Color3.fromRGB(48,  48,  62),
+    TextAccent  = Color3.fromRGB(148, 140, 255),
 
     White       = Color3.fromRGB(255, 255, 255),
-    Green       = Color3.fromRGB(52,  168, 88),
 }
 
 -- ──────────────────────────────────────────────
---  HELPERS
+--  UTILS
 -- ──────────────────────────────────────────────
 local function New(cls, p, ch)
     local o = Instance.new(cls)
@@ -61,44 +62,46 @@ local function New(cls, p, ch)
     return o
 end
 
-local function Tw(obj, goal, t, s, d)
-    TweenService:Create(obj, TweenInfo.new(t or .12, s or Enum.EasingStyle.Quad, d or Enum.EasingDirection.Out), goal):Play()
+local function Tw(o, g, t, s, d)
+    TweenService:Create(o,
+        TweenInfo.new(t or .14, s or Enum.EasingStyle.Quad, d or Enum.EasingDirection.Out),
+        g):Play()
 end
 
-local function Corn(r, p)  return New("UICorner",  { CornerRadius = UDim.new(0, r or 4), Parent = p }) end
-local function Stro(c, t, p) return New("UIStroke", { Color = c, Thickness = t or 1, Parent = p })    end
+local function Corn(r, p) return New("UICorner", {CornerRadius=UDim.new(0,r or 4), Parent=p}) end
+local function Stro(c, t, p) return New("UIStroke", {Color=c, Thickness=t or 1, Parent=p, ApplyStrokeMode=Enum.ApplyStrokeMode.Border}) end
 
-local function Pad(l, r, t, b, p)
-    return New("UIPadding", { PaddingLeft=UDim.new(0,l), PaddingRight=UDim.new(0,r), PaddingTop=UDim.new(0,t), PaddingBottom=UDim.new(0,b), Parent=p })
+local function Pad(l,r,t,b,p)
+    return New("UIPadding",{PaddingLeft=UDim.new(0,l),PaddingRight=UDim.new(0,r),PaddingTop=UDim.new(0,t),PaddingBottom=UDim.new(0,b),Parent=p})
 end
 
 local function List(p, dir, gap)
-    return New("UIListLayout", { Parent=p, FillDirection=dir or Enum.FillDirection.Vertical, SortOrder=Enum.SortOrder.LayoutOrder, Padding=UDim.new(0, gap or 0) })
+    return New("UIListLayout",{Parent=p,FillDirection=dir or Enum.FillDirection.Vertical,SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,gap or 0)})
 end
 
 local function AutoCanvas(sc, lay, extra)
     lay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        sc.CanvasSize = UDim2.new(0, 0, 0, lay.AbsoluteContentSize.Y + (extra or 8))
+        sc.CanvasSize = UDim2.new(0,0,0, lay.AbsoluteContentSize.Y + (extra or 8))
     end)
 end
 
-local function Lbl(p, text, size, color, font, xa, pos, sz, z)
-    return New("TextLabel", {
-        Parent = p, BackgroundTransparency = 1,
-        Text = text, TextSize = size or 12,
-        TextColor3 = color or T.TextPri,
-        Font = font or Enum.Font.Gotham,
-        TextXAlignment = xa or Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Center,
-        Position = pos or UDim2.new(0,0,0,0),
-        Size = sz or UDim2.new(1,0,1,0),
-        ZIndex = z or 1,
-        TextTruncate = Enum.TextTruncate.AtEnd,
+local function MkLbl(p, text, size, color, font, xa, pos, sz, z)
+    return New("TextLabel",{
+        Parent=p, BackgroundTransparency=1,
+        Text=text or "", TextSize=size or 12,
+        TextColor3=color or T.TextPri,
+        Font=font or Enum.Font.Gotham,
+        TextXAlignment=xa or Enum.TextXAlignment.Left,
+        TextYAlignment=Enum.TextYAlignment.Center,
+        Position=pos or UDim2.new(0,0,0,0),
+        Size=sz or UDim2.new(1,0,1,0),
+        ZIndex=z or 2,
+        TextTruncate=Enum.TextTruncate.AtEnd,
     })
 end
 
 local function MkRow(p, h)
-    return New("Frame", { Parent=p, BackgroundTransparency=1, Size=UDim2.new(1,0,0,h or 32), ZIndex=2 })
+    return New("Frame",{Parent=p,BackgroundTransparency=1,Size=UDim2.new(1,0,0,h or 30),ZIndex=2})
 end
 
 local function MakeDraggable(win, handle)
@@ -106,37 +109,24 @@ local function MakeDraggable(win, handle)
     handle.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 then
             drag=true; st=i.Position; sp=win.Position
-            i.Changed:Connect(function() if i.UserInputState==Enum.UserInputState.End then drag=false end end)
+            i.Changed:Connect(function()
+                if i.UserInputState==Enum.UserInputState.End then drag=false end
+            end)
         end
     end)
-    handle.InputChanged:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseMovement then inp=i end end)
+    handle.InputChanged:Connect(function(i)
+        if i.UserInputType==Enum.UserInputType.MouseMovement then inp=i end
+    end)
     UserInputService.InputChanged:Connect(function(i)
         if i==inp and drag then
-            local d = i.Position-st
-            win.Position = UDim2.new(sp.X.Scale, sp.X.Offset+d.X, sp.Y.Scale, sp.Y.Offset+d.Y)
+            local d=i.Position-st
+            win.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)
         end
     end)
 end
 
--- Overlay global para fechar dropdowns ao clicar fora
-local _dropCloseCallbacks = {}
-local _dropOverlay
-
-local function GetOverlay(gui)
-    if _dropOverlay and _dropOverlay.Parent then return _dropOverlay end
-    _dropOverlay = New("TextButton", {
-        Parent = gui, BackgroundTransparency = 1,
-        Size = UDim2.new(1,0,1,0), Position = UDim2.new(0,0,0,0),
-        Text = "", ZIndex = 18, Visible = false,
-        Name = "DropOverlay",
-    })
-    _dropOverlay.MouseButton1Click:Connect(function()
-        _dropOverlay.Visible = false
-        for _, cb in ipairs(_dropCloseCallbacks) do pcall(cb) end
-        _dropCloseCallbacks = {}
-    end)
-    return _dropOverlay
-end
+-- Dropdown overlay
+local _dropClose = nil
 
 -- ──────────────────────────────────────────────
 --  CONSTRUCTOR
@@ -153,169 +143,233 @@ function ShadowUI.new(config)
     self._activeSec = nil
 
     -- ScreenGui
-    self.Gui = New("ScreenGui", {
-        Name="ShadowUILib", Parent=PlayerGui,
+    self.Gui = New("ScreenGui",{
+        Name="ShadowUI", Parent=PlayerGui,
         ResetOnSpawn=false, ZIndexBehavior=Enum.ZIndexBehavior.Sibling, DisplayOrder=100,
     })
 
-    -- Janela compacta: 760×420
-    self.Win = New("Frame", {
+    -- ── JANELA PRINCIPAL ────────────────────
+    self.Win = New("Frame",{
         Name="Window", Parent=self.Gui,
         BackgroundColor3=T.Bg, BorderSizePixel=0,
-        Position=UDim2.new(0.5,-380,0.5,-210),
-        Size=UDim2.new(0,760,0,420),
+        Position=UDim2.new(0.5,-390,0.5,-220),
+        Size=UDim2.new(0,780,0,440),
         ClipsDescendants=true,
     })
-    Corn(8, self.Win)
+    Corn(10, self.Win)
     Stro(T.Border, 1, self.Win)
 
-    -- Sombra suave
-    New("ImageLabel", {
+    -- Sombra
+    New("ImageLabel",{
         Parent=self.Win, BackgroundTransparency=1,
-        Position=UDim2.new(0,-18,0,-18), Size=UDim2.new(1,36,1,36), ZIndex=0,
+        Position=UDim2.new(0,-25,0,-25), Size=UDim2.new(1,50,1,50), ZIndex=0,
         Image="rbxassetid://6014261993", ImageColor3=Color3.new(0,0,0),
-        ImageTransparency=0.5, ScaleType=Enum.ScaleType.Slice,
+        ImageTransparency=0.45, ScaleType=Enum.ScaleType.Slice,
         SliceCenter=Rect.new(49,49,450,450),
     })
 
     -- ── HEADER ──────────────────────────────
-    self.Header = New("Frame", {
+    self.Header = New("Frame",{
         Parent=self.Win, BackgroundColor3=T.Header,
-        Size=UDim2.new(1,0,0,36), ZIndex=3,
+        Size=UDim2.new(1,0,0,38), ZIndex=4,
     })
 
-    -- Linha accent colorida no topo do header
-    New("Frame", {
+    -- Linha accent gradiente no topo
+    local AccLine = New("Frame",{
         Parent=self.Header, BackgroundColor3=T.Accent,
-        Size=UDim2.new(1,0,0,2), ZIndex=5,
+        Size=UDim2.new(1,0,0,2), ZIndex=6,
     })
-    -- Borda inferior do header
-    New("Frame", {
+    New("UIGradient",{
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0, T.Accent),
+            ColorSequenceKeypoint.new(0.5, T.AccentBright),
+            ColorSequenceKeypoint.new(1, T.Accent),
+        },
+        Parent=AccLine,
+    })
+
+    -- Borda inferior
+    New("Frame",{
         Parent=self.Header, BackgroundColor3=T.Border,
-        Position=UDim2.new(0,0,1,-1), Size=UDim2.new(1,0,0,1), ZIndex=4,
+        Position=UDim2.new(0,0,1,-1), Size=UDim2.new(1,0,0,1), ZIndex=5,
     })
 
     MakeDraggable(self.Win, self.Header)
 
-    -- Logo: anel + ponto
-    New("Frame", {
+    -- Logo
+    New("Frame",{
         Parent=self.Header, BackgroundTransparency=1,
-        Position=UDim2.new(0,8,0.5,-9), Size=UDim2.new(0,18,0,18), ZIndex=4,
-    }, { Corn(9), Stro(T.White, 1.5) })
-    New("Frame", {
+        Position=UDim2.new(0,10,0.5,-9), Size=UDim2.new(0,18,0,18), ZIndex=5,
+    },{Corn(9), Stro(T.White,1.5)})
+    New("Frame",{
         Parent=self.Header, BackgroundColor3=T.White,
-        Position=UDim2.new(0,13,0.5,-4), Size=UDim2.new(0,8,0,8), ZIndex=5,
-    }, { Corn(4) })
+        Position=UDim2.new(0,14,0.5,-5), Size=UDim2.new(0,10,0,10), ZIndex=6,
+    },{Corn(5)})
 
     -- Breadcrumb
-    self.BreadFrame = New("Frame", {
+    self.BreadFrame = New("Frame",{
         Parent=self.Header, BackgroundTransparency=1,
-        Position=UDim2.new(0,32,0,0), Size=UDim2.new(0.55,0,1,0), ZIndex=4,
+        Position=UDim2.new(0,36,0,0), Size=UDim2.new(0.5,0,1,0),
+        ZIndex=5, ClipsDescendants=true,
     })
-    List(self.BreadFrame, Enum.FillDirection.Horizontal, 4)
-
-    self.BreadCat = Lbl(self.BreadFrame, self.Title, 12, T.TextPri, Enum.Font.GothamBold,
-        Enum.TextXAlignment.Left, nil, UDim2.new(0,70,1,0), 4)
+    List(self.BreadFrame, Enum.FillDirection.Horizontal, 5)
+    self.BreadCat = MkLbl(self.BreadFrame, self.Title, 12, T.TextPri,
+        Enum.Font.GothamBold, Enum.TextXAlignment.Left, nil, UDim2.new(0,80,1,0), 5)
 
     -- Info direita
-    New("TextLabel", {
+    New("TextLabel",{
         Parent=self.Header, BackgroundTransparency=1,
-        Position=UDim2.new(0,0,0,0), Size=UDim2.new(1,-12,1,0),
+        Position=UDim2.new(0,0,0,0), Size=UDim2.new(1,-14,1,0),
         Font=Enum.Font.GothamBold,
         Text=self.Subtitle..", "..self.Username.."!\nDays Until Expiry: "..self.Expiry,
         TextColor3=T.TextPri, TextSize=11,
         TextXAlignment=Enum.TextXAlignment.Right,
         TextYAlignment=Enum.TextYAlignment.Center,
-        LineHeight=1.45, ZIndex=4,
+        LineHeight=1.5, ZIndex=5,
     })
 
-    -- ── SIDEBAR (170px) ──────────────────────
-    self.Sidebar = New("Frame", {
+    -- ── SIDEBAR ─────────────────────────────
+    self.Sidebar = New("Frame",{
         Parent=self.Win, BackgroundColor3=T.Sidebar,
-        Position=UDim2.new(0,0,0,36), Size=UDim2.new(0,170,1,-36),
-        ZIndex=2, ClipsDescendants=true,
-    })
-    -- Borda direita da sidebar
-    New("Frame", {
-        Parent=self.Sidebar, BackgroundColor3=T.Border,
-        Position=UDim2.new(1,-1,0,0), Size=UDim2.new(0,1,1,0), ZIndex=3,
+        Position=UDim2.new(0,0,0,38), Size=UDim2.new(0,175,1,-38),
+        ZIndex=3, ClipsDescendants=true,
     })
 
-    -- Search
-    local SW = New("Frame", {
-        Parent=self.Sidebar, BackgroundColor3=T.DropBg,
-        Position=UDim2.new(0,7,0,7), Size=UDim2.new(1,-14,0,24), ZIndex=3,
+    -- Borda direita da sidebar
+    New("Frame",{
+        Parent=self.Sidebar, BackgroundColor3=T.Border,
+        Position=UDim2.new(1,-1,0,0), Size=UDim2.new(0,1,1,0), ZIndex=4,
     })
-    Corn(5, SW); Stro(T.Border, 1, SW)
-    local stb = New("TextBox", {
+
+    -- Search bar
+    local SW = New("Frame",{
+        Parent=self.Sidebar, BackgroundColor3=T.DropBg,
+        Position=UDim2.new(0,8,0,8), Size=UDim2.new(1,-16,0,26), ZIndex=4,
+    })
+    Corn(6,SW); Stro(T.Border,1,SW)
+    -- ícone lupa
+    MkLbl(SW,"🔍",11,T.TextDim,Enum.Font.Gotham,Enum.TextXAlignment.Center,
+        UDim2.new(0,0,0,0),UDim2.new(0,24,1,0),5)
+    New("TextBox",{
         Parent=SW, BackgroundTransparency=1,
-        Position=UDim2.new(0,7,0,0), Size=UDim2.new(1,-7,1,0),
-        Font=Enum.Font.Gotham, PlaceholderText="Search",
+        Position=UDim2.new(0,22,0,0), Size=UDim2.new(1,-22,1,0),
+        Font=Enum.Font.Gotham, PlaceholderText="Search...",
         PlaceholderColor3=T.TextDim, Text="",
         TextColor3=T.TextPri, TextSize=11,
-        ClearTextOnFocus=false, ZIndex=4,
+        ClearTextOnFocus=false, ZIndex=5,
     })
 
-    self.SideList = New("ScrollingFrame", {
+    -- Linha separadora abaixo do search
+    New("Frame",{
+        Parent=self.Sidebar, BackgroundColor3=T.Border,
+        Position=UDim2.new(0,8,0,40), Size=UDim2.new(1,-16,0,1), ZIndex=4,
+    })
+
+    self.SideList = New("ScrollingFrame",{
         Parent=self.Sidebar, BackgroundTransparency=1, BorderSizePixel=0,
-        Position=UDim2.new(0,0,0,38), Size=UDim2.new(1,0,1,-38),
-        ScrollBarThickness=2, ScrollBarImageColor3=T.Border,
-        CanvasSize=UDim2.new(0,0,0,0), ZIndex=3,
+        Position=UDim2.new(0,0,0,46), Size=UDim2.new(1,0,1,-46),
+        ScrollBarThickness=2, ScrollBarImageColor3=T.AccentDim,
+        CanvasSize=UDim2.new(0,0,0,0), ZIndex=4,
     })
     local sideL = List(self.SideList)
     AutoCanvas(self.SideList, sideL, 8)
 
     -- ── CONTENT ─────────────────────────────
-    self.Content = New("Frame", {
+    self.Content = New("Frame",{
         Parent=self.Win, BackgroundColor3=T.Bg,
-        Position=UDim2.new(0,170,0,36), Size=UDim2.new(1,-170,1,-36), ZIndex=1,
+        Position=UDim2.new(0,175,0,38), Size=UDim2.new(1,-175,1,-38), ZIndex=1,
     })
 
-    -- Sub-header com tabs
-    self.TabBar = New("Frame", {
-        Parent=self.Content, BackgroundColor3=T.Header,
-        Size=UDim2.new(1,0,0,26), ZIndex=2,
+    -- Sub-header tabs
+    self.TabBar = New("Frame",{
+        Parent=self.Content, BackgroundColor3=T.SubHeader,
+        Size=UDim2.new(1,0,0,28), ZIndex=2,
     })
-    New("Frame", {
+    New("Frame",{
         Parent=self.TabBar, BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1), Size=UDim2.new(1,0,0,1), ZIndex=3,
     })
-    self.TabList = New("Frame", {
+    self.TabList = New("Frame",{
         Parent=self.TabBar, BackgroundTransparency=1,
         Position=UDim2.new(0,8,0,0), Size=UDim2.new(1,-8,1,0), ZIndex=3,
     })
-    List(self.TabList, Enum.FillDirection.Horizontal, 2)
+    List(self.TabList, Enum.FillDirection.Horizontal, 0)
 
     -- Painéis
-    self.Panels = New("Frame", {
+    self.Panels = New("Frame",{
         Parent=self.Content, BackgroundTransparency=1,
-        Position=UDim2.new(0,0,0,26), Size=UDim2.new(1,0,1,-26), ZIndex=1,
+        Position=UDim2.new(0,0,0,28), Size=UDim2.new(1,0,1,-28), ZIndex=1,
     })
 
-    self.LeftScroll = New("ScrollingFrame", {
+    self.LeftScroll = New("ScrollingFrame",{
         Parent=self.Panels, BackgroundTransparency=1, BorderSizePixel=0,
         Position=UDim2.new(0,0,0,0), Size=UDim2.new(0.5,-1,1,0),
-        ScrollBarThickness=2, ScrollBarImageColor3=T.Border,
+        ScrollBarThickness=2, ScrollBarImageColor3=T.AccentDim,
         CanvasSize=UDim2.new(0,0,0,0), ZIndex=1,
     })
     local leftL = List(self.LeftScroll)
-    Pad(8,8,5,5, self.LeftScroll)
+    Pad(10,10,6,6,self.LeftScroll)
     AutoCanvas(self.LeftScroll, leftL, 10)
 
-    New("Frame", {
+    New("Frame",{
         Parent=self.Panels, BackgroundColor3=T.Border,
         Position=UDim2.new(0.5,-1,0,0), Size=UDim2.new(0,1,1,0), ZIndex=2,
     })
 
-    self.RightScroll = New("ScrollingFrame", {
+    self.RightScroll = New("ScrollingFrame",{
         Parent=self.Panels, BackgroundTransparency=1, BorderSizePixel=0,
         Position=UDim2.new(0.5,1,0,0), Size=UDim2.new(0.5,-1,1,0),
-        ScrollBarThickness=2, ScrollBarImageColor3=T.Border,
+        ScrollBarThickness=2, ScrollBarImageColor3=T.AccentDim,
         CanvasSize=UDim2.new(0,0,0,0), ZIndex=1,
     })
     local rightL = List(self.RightScroll)
-    Pad(8,8,5,5, self.RightScroll)
+    Pad(10,10,6,6,self.RightScroll)
     AutoCanvas(self.RightScroll, rightL, 10)
+
+    -- ── BOTÃO FLUTUANTE HIDE/SHOW ────────────
+    self.ToggleBtn = New("TextButton",{
+        Parent=self.Gui, BackgroundColor3=T.Accent,
+        Position=UDim2.new(0,16,0.5,-16),
+        Size=UDim2.new(0,32,0,32),
+        Text="", ZIndex=200,
+        AutoButtonColor=false,
+    })
+    Corn(8, self.ToggleBtn)
+    Stro(T.AccentBright, 1, self.ToggleBtn)
+
+    -- Ícone dentro do botão
+    self.ToggleIcon = MkLbl(self.ToggleBtn,"◀",13,T.White,Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center,nil,UDim2.new(1,0,1,0),201)
+
+    -- Sombra no botão
+    New("ImageLabel",{
+        Parent=self.ToggleBtn, BackgroundTransparency=1,
+        Position=UDim2.new(0,-8,0,-8), Size=UDim2.new(1,16,1,16), ZIndex=199,
+        Image="rbxassetid://6014261993", ImageColor3=T.Accent,
+        ImageTransparency=0.7, ScaleType=Enum.ScaleType.Slice,
+        SliceCenter=Rect.new(49,49,450,450),
+    })
+
+    self.ToggleBtn.MouseEnter:Connect(function()
+        Tw(self.ToggleBtn,{BackgroundColor3=T.AccentBright},.1)
+        Tw(self.ToggleBtn,{Size=UDim2.new(0,34,0,34)},.1)
+    end)
+    self.ToggleBtn.MouseLeave:Connect(function()
+        Tw(self.ToggleBtn,{BackgroundColor3=T.Accent},.1)
+        Tw(self.ToggleBtn,{Size=UDim2.new(0,32,0,32)},.1)
+    end)
+    self.ToggleBtn.MouseButton1Click:Connect(function()
+        self._visible = not self._visible
+        if self._visible then
+            self.Win.Visible = true
+            Tw(self.Win,{Size=UDim2.new(0,780,0,440)},.18)
+            self.ToggleIcon.Text = "◀"
+        else
+            Tw(self.Win,{Size=UDim2.new(0,0,0,440)},.18)
+            task.delay(.18, function() self.Win.Visible=false end)
+            self.ToggleIcon.Text = "▶"
+        end
+    end)
 
     return self
 end
@@ -329,10 +383,10 @@ function ShadowUI:_Bread(catName, secName)
     end
     self.BreadCat.Text = catName
     if secName then
-        Lbl(self.BreadFrame, "›", 13, T.TextSec, Enum.Font.Gotham,
-            Enum.TextXAlignment.Center, nil, UDim2.new(0,10,1,0), 4)
-        Lbl(self.BreadFrame, secName, 12, T.TextPri, Enum.Font.Gotham,
-            Enum.TextXAlignment.Left, nil, UDim2.new(0,100,1,0), 4)
+        MkLbl(self.BreadFrame,"›",13,T.TextSec,Enum.Font.Gotham,
+            Enum.TextXAlignment.Center,nil,UDim2.new(0,10,1,0),5)
+        MkLbl(self.BreadFrame,secName,12,T.TextAccent,Enum.Font.GothamBold,
+            Enum.TextXAlignment.Left,nil,UDim2.new(0,110,1,0),5)
     end
 end
 
@@ -340,37 +394,42 @@ end
 --  ADD CATEGORY
 -- ──────────────────────────────────────────────
 function ShadowUI:AddCategory(name)
-    local cat = { Name=name, _sections={}, _expanded=false, _ui=self }
+    local cat = {Name=name, _sections={}, _expanded=false, _ui=self}
 
-    local Row = New("TextButton", {
+    local Row = New("TextButton",{
         Parent=self.SideList, BackgroundTransparency=1,
-        Size=UDim2.new(1,0,0,30), Text="",
-        Font=Enum.Font.GothamBold, AutoButtonColor=false, ZIndex=4,
+        Size=UDim2.new(1,0,0,32), Text="",
+        AutoButtonColor=false, ZIndex=5,
     })
+    Corn(4, Row)
 
-    -- Hover
-    Row.MouseEnter:Connect(function() Tw(Row, {BackgroundColor3=T.RowHover}, .1); Row.BackgroundTransparency=0 end)
-    Row.MouseLeave:Connect(function() Row.BackgroundTransparency=1 end)
+    Row.MouseEnter:Connect(function()
+        Tw(Row,{BackgroundColor3=T.RowHover},.08)
+        Row.BackgroundTransparency=0
+    end)
+    Row.MouseLeave:Connect(function()
+        if not cat._expanded then Row.BackgroundTransparency=1 end
+    end)
 
-    -- Ícone: anel + ponto
-    New("Frame", {
+    -- Ícone
+    New("Frame",{
         Parent=Row, BackgroundTransparency=1,
-        Position=UDim2.new(0,8,0.5,-8), Size=UDim2.new(0,16,0,16), ZIndex=5,
-    }, { Corn(8), Stro(T.White, 1.3) })
-    New("Frame", {
+        Position=UDim2.new(0,9,0.5,-8), Size=UDim2.new(0,16,0,16), ZIndex=6,
+    },{Corn(8), Stro(T.White,1.4)})
+    New("Frame",{
         Parent=Row, BackgroundColor3=T.White,
-        Position=UDim2.new(0,12,0.5,-4), Size=UDim2.new(0,8,0,8), ZIndex=6,
-    }, { Corn(4) })
+        Position=UDim2.new(0,13,0.5,-4), Size=UDim2.new(0,8,0,8), ZIndex=7,
+    },{Corn(4)})
 
-    Lbl(Row, name, 12, T.TextPri, Enum.Font.GothamBold,
-        Enum.TextXAlignment.Left, UDim2.new(0,30,0,0), UDim2.new(1,-50,1,0), 5)
+    MkLbl(Row, name, 12, T.TextPri, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Left, UDim2.new(0,32,0,0), UDim2.new(1,-52,1,0), 6)
 
-    local Chev = Lbl(Row, "‹", 13, T.TextSec, Enum.Font.GothamBold,
-        Enum.TextXAlignment.Center, UDim2.new(1,-20,0,0), UDim2.new(0,16,1,0), 5)
+    local Chev = MkLbl(Row,"‹",14,T.TextSec,Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center, UDim2.new(1,-22,0,0), UDim2.new(0,18,1,0), 6)
 
-    local SF = New("Frame", {
+    local SF = New("Frame",{
         Parent=self.SideList, BackgroundTransparency=1,
-        Size=UDim2.new(1,0,0,0), ClipsDescendants=true, Visible=false, ZIndex=4,
+        Size=UDim2.new(1,0,0,0), ClipsDescendants=true, Visible=false, ZIndex=5,
     })
     local SL = List(SF)
 
@@ -382,11 +441,14 @@ function ShadowUI:AddCategory(name)
             SF.Visible=true
             SF.Size=UDim2.new(1,0,0,SL.AbsoluteContentSize.Y)
             Chev.Text="›"
+            Row.BackgroundTransparency=0
+            Row.BackgroundColor3=T.RowHover
             if #cat._sections>0 and not cat._sections[1]._active then
                 cat._sections[1]._btn.MouseButton1Click:Fire()
             end
         else
-            SF.Visible=false; SF.Size=UDim2.new(1,0,0,0); Chev.Text="‹"
+            SF.Visible=false; SF.Size=UDim2.new(1,0,0,0)
+            Chev.Text="‹"; Row.BackgroundTransparency=1
         end
     end)
 
@@ -398,38 +460,44 @@ end
 --  ADD SECTION
 -- ──────────────────────────────────────────────
 function ShadowUI:AddSection(cat, name)
-    local sec = { Name=name, _cat=cat, _active=false, _left={}, _right={}, _ui=self }
+    local sec = {Name=name, _cat=cat, _active=false, _left={}, _right={}, _ui=self}
 
-    local Btn = New("TextButton", {
+    local Btn = New("TextButton",{
         Parent=cat._sf, BackgroundTransparency=1,
-        Size=UDim2.new(1,0,0,24), Text="",
-        AutoButtonColor=false, ZIndex=5,
+        Size=UDim2.new(1,0,0,26), Text="",
+        AutoButtonColor=false, ZIndex=6,
     })
+    Corn(3, Btn)
 
-    Btn.MouseEnter:Connect(function()
-        if not sec._active then Tw(Btn,{BackgroundColor3=T.RowHover},.08); Btn.BackgroundTransparency=0 end
-    end)
-    Btn.MouseLeave:Connect(function() Btn.BackgroundTransparency=1 end)
-
-    -- Linha accent lateral quando ativo
-    local AccBar = New("Frame", {
+    -- Barra lateral accent
+    local AccBar = New("Frame",{
         Parent=Btn, BackgroundColor3=T.Accent,
-        Position=UDim2.new(0,0,0.15,0), Size=UDim2.new(0,2,0.7,0),
-        ZIndex=7, Visible=false,
+        Position=UDim2.new(0,0,0.2,0), Size=UDim2.new(0,2,0.6,0),
+        ZIndex=8, Visible=false,
     })
     Corn(1, AccBar)
 
     -- Diamond
-    local Dia = New("Frame", {
+    local Dia = New("Frame",{
         Parent=Btn, BackgroundColor3=T.AccentDim,
         Position=UDim2.new(0,18,0.5,-4), Size=UDim2.new(0,8,0,8),
-        Rotation=45, ZIndex=6,
+        Rotation=45, ZIndex=7,
     })
 
-    local Lbl_ = Lbl(Btn, name, 11, T.TextSec, Enum.Font.Gotham,
-        Enum.TextXAlignment.Left, UDim2.new(0,32,0,0), UDim2.new(1,-36,1,0), 6)
+    local Lbl_ = MkLbl(Btn, name, 11, T.TextSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left, UDim2.new(0,32,0,0), UDim2.new(1,-36,1,0), 7)
 
     sec._btn=Btn; sec._dia=Dia; sec._lbl=Lbl_; sec._accBar=AccBar
+
+    Btn.MouseEnter:Connect(function()
+        if not sec._active then
+            Tw(Btn,{BackgroundColor3=T.RowHover},.08)
+            Btn.BackgroundTransparency=0
+        end
+    end)
+    Btn.MouseLeave:Connect(function()
+        if not sec._active then Btn.BackgroundTransparency=1 end
+    end)
 
     Btn.MouseButton1Click:Connect(function()
         if self._activeSec then
@@ -439,24 +507,27 @@ function ShadowUI:AddSection(cat, name)
             p._accBar.Visible=false
             p._btn.BackgroundTransparency=1
         end
-        sec._active=true; Lbl_.TextColor3=T.TextAccent
-        Dia.BackgroundColor3=T.Accent; AccBar.Visible=true
-        Btn.BackgroundColor3=T.RowHover; Btn.BackgroundTransparency=0
+        sec._active=true
+        Lbl_.TextColor3=T.TextAccent
+        Dia.BackgroundColor3=T.Accent
+        AccBar.Visible=true
+        Btn.BackgroundColor3=Color3.fromRGB(22,20,36)
+        Btn.BackgroundTransparency=0
         self._activeSec=sec
         self:_Bread(cat.Name, name)
         self:_Render(sec)
     end)
 
     cat._sections[#cat._sections+1]=sec
-    cat._sf.Size=UDim2.new(1,0,0,cat._sl.AbsoluteContentSize.Y+24)
+    cat._sf.Size=UDim2.new(1,0,0,cat._sl.AbsoluteContentSize.Y+26)
     return sec
 end
 
 -- ──────────────────────────────────────────────
---  RENDER SECTION
+--  RENDER
 -- ──────────────────────────────────────────────
 function ShadowUI:_Render(sec)
-    for _, p in ipairs({self.LeftScroll, self.RightScroll}) do
+    for _, p in ipairs({self.LeftScroll,self.RightScroll}) do
         for _, c in ipairs(p:GetChildren()) do
             if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
         end
@@ -465,27 +536,27 @@ function ShadowUI:_Render(sec)
         if not c:IsA("UIListLayout") then c:Destroy() end
     end
 
-    -- Tabs
     for _, s in ipairs(sec._cat._sections) do
-        local act = (s==sec)
-        local T_ = New("Frame", {
+        local act=(s==sec)
+        local Tab = New("Frame",{
             Parent=self.TabList, BackgroundTransparency=1,
-            Size=UDim2.new(0,80,1,0), ZIndex=3,
+            Size=UDim2.new(0,82,1,0), ZIndex=3,
         })
-        -- Underline accent na tab ativa
         if act then
-            New("Frame", {
-                Parent=T_, BackgroundColor3=T.Accent,
+            New("Frame",{
+                Parent=Tab, BackgroundColor3=T.Accent,
                 Position=UDim2.new(0,0,1,-2), Size=UDim2.new(1,0,0,2), ZIndex=5,
             })
         end
-        New("Frame", {
-            Parent=T_, BackgroundColor3=act and T.Accent or T.AccentDim,
-            Position=UDim2.new(0,3,0.5,-4), Size=UDim2.new(0,7,0,7),
+        New("Frame",{
+            Parent=Tab,
+            BackgroundColor3=act and T.Accent or T.AccentDim,
+            Position=UDim2.new(0,4,0.5,-3), Size=UDim2.new(0,7,0,7),
             Rotation=45, ZIndex=4,
         })
-        Lbl(T_, s.Name, 11, act and T.TextPri or T.TextSec, Enum.Font.Gotham,
-            Enum.TextXAlignment.Left, UDim2.new(0,14,0,0), UDim2.new(1,-14,1,0), 4)
+        MkLbl(Tab, s.Name, 11, act and T.TextAccent or T.TextSec,
+            act and Enum.Font.GothamBold or Enum.Font.Gotham,
+            Enum.TextXAlignment.Left, UDim2.new(0,16,0,0), UDim2.new(1,-16,1,0), 4)
     end
 
     for _, ctrl in ipairs(sec._left)  do self:_Build(self.LeftScroll,  ctrl) end
@@ -493,66 +564,70 @@ function ShadowUI:_Render(sec)
 end
 
 -- ──────────────────────────────────────────────
---  BUILD DISPATCHER
+--  BUILD
 -- ──────────────────────────────────────────────
 function ShadowUI:_Build(p, ctrl)
-    if ctrl.type=="toggle"    then return self:_Toggle(p, ctrl)    end
-    if ctrl.type=="slider"    then return self:_Slider(p, ctrl)    end
-    if ctrl.type=="dropdown"  then return self:_Dropdown(p, ctrl)  end
-    if ctrl.type=="header"    then return self:_Header(p, ctrl)    end
-    if ctrl.type=="label"     then return self:_Label(p, ctrl)     end
+    if ctrl.type=="toggle"   then return self:_Toggle(p,ctrl)   end
+    if ctrl.type=="slider"   then return self:_Slider(p,ctrl)   end
+    if ctrl.type=="dropdown" then return self:_Dropdown(p,ctrl) end
+    if ctrl.type=="header"   then return self:_Header(p,ctrl)   end
+    if ctrl.type=="label"    then return self:_Label(p,ctrl)    end
 end
 
 -- ──────────────────────────────────────────────
 --  TOGGLE
 -- ──────────────────────────────────────────────
 function ShadowUI:_Toggle(parent, ctrl)
-    local val = ctrl._val ~= nil and ctrl._val or (ctrl.default or false)
+    local val = ctrl._val~=nil and ctrl._val or (ctrl.default or false)
     local row = MkRow(parent, 30)
 
-    -- Hover sutil no row
-    local HBtn = New("TextButton", {
+    local HBtn = New("TextButton",{
         Parent=row, BackgroundTransparency=1,
         Size=UDim2.new(1,0,1,0), Text="", ZIndex=5,
     })
-    HBtn.MouseEnter:Connect(function() Tw(row,{BackgroundColor3=T.RowHover},.08); row.BackgroundTransparency=0 end)
+    Corn(4, row)
+    HBtn.MouseEnter:Connect(function()
+        Tw(row,{BackgroundColor3=T.RowHover},.08)
+        row.BackgroundTransparency=0
+    end)
     HBtn.MouseLeave:Connect(function() row.BackgroundTransparency=1 end)
 
-    -- Gear
-    local rOff = -38
+    local rOff=-38
     if ctrl.gear then
-        local G = New("TextButton", {
+        local G=New("TextButton",{
             Parent=row, BackgroundTransparency=1,
             Position=UDim2.new(1,-54,0.5,-8), Size=UDim2.new(0,16,0,16),
-            Font=Enum.Font.Gotham, Text="⚙", TextColor3=T.TextSec, TextSize=13, ZIndex=6,
+            Font=Enum.Font.Gotham, Text="⚙",
+            TextColor3=T.TextSec, TextSize=13, ZIndex=6,
         })
-        G.MouseEnter:Connect(function() G.TextColor3=T.TextPri end)
-        G.MouseLeave:Connect(function() G.TextColor3=T.TextSec end)
-        rOff = -58
+        G.MouseEnter:Connect(function() Tw(G,{TextColor3=T.TextAccent},.08) end)
+        G.MouseLeave:Connect(function() Tw(G,{TextColor3=T.TextSec},.08) end)
+        rOff=-58
     end
 
-    local L = Lbl(row, ctrl.text or "Toggle", 12,
-        val and T.TextPri or T.TextDim, Enum.Font.Gotham,
-        Enum.TextXAlignment.Left, UDim2.new(0,0,0,0), UDim2.new(1, rOff, 1, 0), 3)
+    local L=MkLbl(row, ctrl.text or "Toggle", 12,
+        val and T.TextPri or T.TextDim,
+        Enum.Font.Gotham, Enum.TextXAlignment.Left,
+        UDim2.new(0,0,0,0), UDim2.new(1,rOff,1,0), 4)
 
     -- Track
-    local Tr = New("Frame", {
+    local Tr=New("Frame",{
         Parent=row, BackgroundColor3=val and T.ToggleOn or T.ToggleOff,
-        Position=UDim2.new(1,-28,0.5,-7), Size=UDim2.new(0,24,0,14), ZIndex=3,
+        Position=UDim2.new(1,-30,0.5,-7), Size=UDim2.new(0,26,0,14), ZIndex=4,
     })
     Corn(7, Tr)
 
-    local Th = New("Frame", {
+    local Th=New("Frame",{
         Parent=Tr, BackgroundColor3=T.White,
-        Position=val and UDim2.new(1,-12,0.5,-5) or UDim2.new(0,2,0.5,-5),
-        Size=UDim2.new(0,10,0,10), ZIndex=4,
+        Position=val and UDim2.new(1,-13,0.5,-5) or UDim2.new(0,2,0.5,-5),
+        Size=UDim2.new(0,10,0,10), ZIndex=5,
     })
     Corn(5, Th)
 
     local function Set(v)
         val=v; ctrl._val=v
         Tw(Tr,{BackgroundColor3=v and T.ToggleOn or T.ToggleOff},.12)
-        Tw(Th,{Position=v and UDim2.new(1,-12,0.5,-5) or UDim2.new(0,2,0.5,-5)},.12)
+        Tw(Th,{Position=v and UDim2.new(1,-13,0.5,-5) or UDim2.new(0,2,0.5,-5)},.12)
         L.TextColor3=v and T.TextPri or T.TextDim
         if ctrl.callback then ctrl.callback(v) end
     end
@@ -563,80 +638,112 @@ function ShadowUI:_Toggle(parent, ctrl)
 end
 
 -- ──────────────────────────────────────────────
---  SLIDER
+--  SLIDER — fix: usa RunService para drag suave
 -- ──────────────────────────────────────────────
 function ShadowUI:_Slider(parent, ctrl)
     local mn  = ctrl.min    or 0
     local mx  = ctrl.max    or 100
     local stp = ctrl.step   or 0
     local fmt = ctrl.format or "%.2f"
-    local val = ctrl._val   ~= nil and ctrl._val or (ctrl.default or mn)
+    local val = ctrl._val~=nil and ctrl._val or (ctrl.default or mn)
 
     local function Snap(v)
-        if stp and stp>0 then v=math.round((v-mn)/stp)*stp+mn end
+        if stp and stp>0 then
+            v = math.round((v-mn)/stp)*stp+mn
+        end
         return math.clamp(v, mn, mx)
     end
 
-    local Wrap = MkRow(parent, 42)
+    local Wrap = MkRow(parent, 44)
+    Corn(4, Wrap)
 
-    -- Top row
-    local TR = New("Frame", {
+    -- Top row: nome + valor
+    local TR = New("Frame",{
         Parent=Wrap, BackgroundTransparency=1,
-        Position=UDim2.new(0,0,0,2), Size=UDim2.new(1,0,0,14), ZIndex=3,
+        Position=UDim2.new(0,0,0,3), Size=UDim2.new(1,0,0,15), ZIndex=3,
     })
-    Lbl(TR, ctrl.text or "Slider", 11, T.TextSec, Enum.Font.Gotham,
-        Enum.TextXAlignment.Left, nil, UDim2.new(0.7,0,1,0), 3)
-    local VL = Lbl(TR, string.format(fmt,val), 11, T.TextAccent, Enum.Font.GothamBold,
-        Enum.TextXAlignment.Right, UDim2.new(0.7,0,0,0), UDim2.new(0.3,0,1,0), 3)
+    MkLbl(TR, ctrl.text or "Slider", 11, T.TextSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left, nil, UDim2.new(0.68,0,1,0), 3)
 
-    -- Track bg
-    local Trk = New("Frame", {
+    local VL=MkLbl(TR, string.format(fmt,val), 11, T.TextAccent,
+        Enum.Font.GothamBold, Enum.TextXAlignment.Right,
+        UDim2.new(0.68,0,0,0), UDim2.new(0.32,0,1,0), 3)
+
+    -- Track
+    local Trk = New("Frame",{
         Parent=Wrap, BackgroundColor3=T.SliderTrack,
-        Position=UDim2.new(0,0,0,24), Size=UDim2.new(1,0,0,3), ZIndex=3,
+        Position=UDim2.new(0,0,0,26), Size=UDim2.new(1,0,0,4), ZIndex=3,
     })
     Corn(2, Trk)
+    -- Glow sutil no track
+    New("UIGradient",{
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0,T.Border),
+            ColorSequenceKeypoint.new(1,T.SliderTrack),
+        },
+        Parent=Trk,
+    })
 
     local pct = (val-mn)/(mx-mn)
 
-    -- Fill colorido (accent)
-    local Fill = New("Frame", {
+    local Fill = New("Frame",{
         Parent=Trk, BackgroundColor3=T.SliderFill,
         Size=UDim2.new(pct,0,1,0), ZIndex=4,
     })
     Corn(2, Fill)
 
-    -- Thumb
-    local Th = New("Frame", {
+    local Th = New("Frame",{
         Parent=Trk, BackgroundColor3=T.SliderThumb,
-        Position=UDim2.new(pct,-5,0.5,-5), Size=UDim2.new(0,10,0,10), ZIndex=5,
+        Position=UDim2.new(pct,-6,0.5,-6), Size=UDim2.new(0,12,0,12), ZIndex=5,
     })
-    Corn(5, Th)
-    -- Borda sutil no thumb
-    Stro(T.Accent, 1, Th)
+    Corn(6, Th)
+    Stro(T.Accent, 1.5, Th)
 
     local function Set(v)
         v=Snap(v); val=v; ctrl._val=v
         local p=(v-mn)/(mx-mn)
-        Fill.Size=UDim2.new(p,0,1,0)
-        Th.Position=UDim2.new(p,-5,0.5,-5)
-        VL.Text=string.format(fmt,v)
+        Fill.Size     = UDim2.new(p,0,1,0)
+        Th.Position   = UDim2.new(p,-6,0.5,-6)
+        VL.Text       = string.format(fmt,v)
         if ctrl.callback then ctrl.callback(v) end
     end
 
-    local drag=false
-    Trk.InputBegan:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 then
-            drag=true
-            Set(mn+math.clamp((i.Position.X-Trk.AbsolutePosition.X)/Trk.AbsoluteSize.X,0,1)*(mx-mn))
-        end
+    -- ── DRAG com InputBegan no Track + captura global ──
+    local dragging = false
+
+    local function GetPct(absX)
+        local ap = Trk.AbsolutePosition.X
+        local as = Trk.AbsoluteSize.X
+        if as == 0 then return 0 end
+        return math.clamp((absX - ap) / as, 0, 1)
+    end
+
+    -- Área de hit maior que o track visual (mais fácil de clicar)
+    local HitZone = New("TextButton",{
+        Parent=Trk, BackgroundTransparency=1,
+        Position=UDim2.new(0,0,0.5,-10),
+        Size=UDim2.new(1,0,0,20),
+        Text="", ZIndex=8,
+    })
+
+    HitZone.MouseButton1Down:Connect(function(x,y)
+        dragging=true
+        Tw(Th,{Size=UDim2.new(0,14,0,14), Position=UDim2.new(GetPct(x),-7,0.5,-7)},.06)
+        Set(mn + GetPct(x)*(mx-mn))
     end)
+
     UserInputService.InputChanged:Connect(function(i)
-        if drag and i.UserInputType==Enum.UserInputType.MouseMovement then
-            Set(mn+math.clamp((i.Position.X-Trk.AbsolutePosition.X)/Trk.AbsoluteSize.X,0,1)*(mx-mn))
+        if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+            Set(mn + GetPct(i.Position.X)*(mx-mn))
+            Th.Position = UDim2.new(GetPct(i.Position.X),-6,0.5,-6)
         end
     end)
+
     UserInputService.InputEnded:Connect(function(i)
-        if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end
+        if i.UserInputType==Enum.UserInputType.MouseButton1 and dragging then
+            dragging=false
+            Tw(Th,{Size=UDim2.new(0,12,0,12)},.06)
+        end
     end)
 
     ctrl._setValue=Set; ctrl._getValue=function() return val end
@@ -644,28 +751,27 @@ function ShadowUI:_Slider(parent, ctrl)
 end
 
 -- ──────────────────────────────────────────────
---  DROPDOWN  (overlay corrige clique atrás)
+--  DROPDOWN
 -- ──────────────────────────────────────────────
 function ShadowUI:_Dropdown(parent, ctrl)
-    local opts = ctrl.options or {}
-    local val  = ctrl._val ~= nil and ctrl._val or (ctrl.default or opts[1])
+    local opts=ctrl.options or {}
+    local val=ctrl._val~=nil and ctrl._val or (ctrl.default or opts[1])
 
-    local Wrap = MkRow(parent, 46)
+    local Wrap=MkRow(parent,46)
 
-    Lbl(Wrap, ctrl.text or "Dropdown", 11, T.TextSec, Enum.Font.Gotham,
+    MkLbl(Wrap, ctrl.text or "Dropdown", 11, T.TextSec, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, UDim2.new(0,0,0,2), UDim2.new(1,0,0,12), 3)
 
-    local Box = New("Frame", {
+    local Box=New("Frame",{
         Parent=Wrap, BackgroundColor3=T.DropBg,
         Position=UDim2.new(0,0,0,16), Size=UDim2.new(1,0,0,24), ZIndex=3,
     })
-    Corn(5, Box); Stro(T.DropBorder, 1, Box)
+    Corn(5,Box); Stro(T.Border,1,Box)
 
-    local Sel = Lbl(Box, tostring(val), 12, T.TextPri, Enum.Font.Gotham,
+    local Sel=MkLbl(Box, tostring(val), 12, T.TextPri, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, UDim2.new(0,8,0,0), UDim2.new(1,-22,1,0), 4)
 
-    -- Seta
-    Lbl(Box, "▾", 11, T.TextSec, Enum.Font.GothamBold,
+    MkLbl(Box,"▾",11,T.TextSec,Enum.Font.GothamBold,
         Enum.TextXAlignment.Center, UDim2.new(1,-18,0,0), UDim2.new(0,14,1,0), 4)
 
     local open=false
@@ -674,7 +780,7 @@ function ShadowUI:_Dropdown(parent, ctrl)
     local function Close()
         if DropF then DropF:Destroy(); DropF=nil end
         open=false
-        Stro(T.DropBorder, 1, Box)
+        if _dropClose==Close then _dropClose=nil end
     end
 
     local function SetVal(v)
@@ -683,82 +789,104 @@ function ShadowUI:_Dropdown(parent, ctrl)
         if ctrl.callback then ctrl.callback(v) end
     end
 
-    local OBtn = New("TextButton", {
+    local OBtn=New("TextButton",{
         Parent=Box, BackgroundTransparency=1,
         Size=UDim2.new(1,0,1,0), Text="", ZIndex=5,
     })
 
+    OBtn.MouseEnter:Connect(function() Tw(Box,{BackgroundColor3=T.DropHover},.08) end)
+    OBtn.MouseLeave:Connect(function() if not open then Tw(Box,{BackgroundColor3=T.DropBg},.08) end end)
+
     OBtn.MouseButton1Click:Connect(function()
+        -- Fecha qualquer dropdown aberto
+        if _dropClose and _dropClose~=Close then _dropClose() end
+
         if open then Close(); return end
         open=true
-        -- Destaca borda do box quando aberto
-        Stro(T.Accent, 1, Box)
+        _dropClose=Close
 
         local itemH=22
         local listH=#opts*itemH+6
 
-        -- Frame do dropdown renderizado no ScreenGui (ZIndex alto, não clipado)
-        DropF = New("Frame", {
+        DropF=New("Frame",{
             Parent=self.Gui,
             BackgroundColor3=T.DropBg,
-            Size=UDim2.new(0, Box.AbsoluteSize.X, 0, listH),
-            ZIndex=30, ClipsDescendants=true,
+            Size=UDim2.new(0,Box.AbsoluteSize.X,0,listH),
+            ZIndex=50, ClipsDescendants=true,
         })
-        Corn(5, DropF); Stro(T.Accent, 1, DropF)
+        Corn(6,DropF); Stro(T.Accent,1,DropF)
 
-        -- Posiciona no mundo relativo ao ScreenGui
+        -- Sombra no dropdown
+        New("ImageLabel",{
+            Parent=DropF, BackgroundTransparency=1,
+            Position=UDim2.new(0,-8,0,-8), Size=UDim2.new(1,16,1,16), ZIndex=49,
+            Image="rbxassetid://6014261993", ImageColor3=Color3.new(0,0,0),
+            ImageTransparency=0.5, ScaleType=Enum.ScaleType.Slice,
+            SliceCenter=Rect.new(49,49,450,450),
+        })
+
         local function UpdatePos()
-            local ap = Box.AbsolutePosition
-            local as = Box.AbsoluteSize
-            DropF.Position = UDim2.new(0, ap.X, 0, ap.Y+as.Y+3)
-            DropF.Size     = UDim2.new(0, as.X, 0, listH)
+            local ap=Box.AbsolutePosition
+            local as=Box.AbsoluteSize
+            DropF.Position=UDim2.new(0,ap.X,0,ap.Y+as.Y+3)
+            DropF.Size=UDim2.new(0,as.X,0,listH)
         end
         UpdatePos()
 
-        List(DropF, nil, 0)
-        Pad(3,3,3,3, DropF)
+        List(DropF,nil,0)
+        Pad(3,3,3,3,DropF)
 
         for _, opt in ipairs(opts) do
-            local isSelected = (opt==val)
-            local Item = New("TextButton", {
+            local isS=(opt==val)
+            local Item=New("TextButton",{
                 Parent=DropF,
-                BackgroundColor3=isSelected and T.RowHover or T.DropBg,
-                BackgroundTransparency=isSelected and 0 or 1,
+                BackgroundColor3=isS and Color3.fromRGB(22,20,36) or T.DropBg,
+                BackgroundTransparency=isS and 0 or 1,
                 Size=UDim2.new(1,0,0,itemH),
-                Font=Enum.Font.Gotham,
+                Font=isS and Enum.Font.GothamBold or Enum.Font.Gotham,
                 Text=tostring(opt),
-                TextColor3=isSelected and T.TextAccent or T.TextSec,
+                TextColor3=isS and T.TextAccent or T.TextSec,
                 TextSize=11,
                 TextXAlignment=Enum.TextXAlignment.Left,
-                AutoButtonColor=false, ZIndex=31,
+                AutoButtonColor=false, ZIndex=51,
             })
-            Pad(8,0,0,0, Item)
-            Corn(3, Item)
+            Pad(8,0,0,0,Item); Corn(3,Item)
 
             Item.MouseEnter:Connect(function()
                 Item.BackgroundTransparency=0
-                Tw(Item,{BackgroundColor3=T.DropHover},.08)
-                if not isSelected then Item.TextColor3=T.TextPri end
+                Tw(Item,{BackgroundColor3=T.DropHover,TextColor3=T.TextPri},.08)
             end)
             Item.MouseLeave:Connect(function()
-                if not isSelected then
+                if not isS then
                     Item.BackgroundTransparency=1
                     Item.TextColor3=T.TextSec
+                else
+                    Item.BackgroundTransparency=0
+                    Item.BackgroundColor3=Color3.fromRGB(22,20,36)
                 end
             end)
-            Item.MouseButton1Click:Connect(function() SetVal(opt) end)
+            Item.MouseButton1Click:Connect(function()
+                -- Delay mínimo para não propagar o clique abaixo
+                task.defer(function() SetVal(opt) end)
+            end)
         end
 
-        -- Overlay invisível captura cliques fora do dropdown
-        local ov = GetOverlay(self.Gui)
-        ov.Visible=true
-        ov.Size=UDim2.new(1,0,1,0)
-        _dropCloseCallbacks[#_dropCloseCallbacks+1] = Close
+        -- Overlay para fechar ao clicar fora
+        local Ov=New("TextButton",{
+            Parent=self.Gui, BackgroundTransparency=1,
+            Size=UDim2.new(1,0,1,0), Text="", ZIndex=48,
+        })
+        Ov.MouseButton1Click:Connect(function()
+            Close(); Ov:Destroy()
+        end)
+        -- Garante que o overlay seja destruído quando o dropdown fechar
+        local oldClose=Close
+        Close = function()
+            oldClose()
+            if Ov and Ov.Parent then Ov:Destroy() end
+        end
+        _dropClose=Close
     end)
-
-    -- Hover no box
-    OBtn.MouseEnter:Connect(function() Tw(Box,{BackgroundColor3=T.DropHover},.08) end)
-    OBtn.MouseLeave:Connect(function() if not open then Tw(Box,{BackgroundColor3=T.DropBg},.08) end end)
 
     ctrl._setValue=SetVal; ctrl._getValue=function() return val end
     return Wrap
@@ -768,51 +896,52 @@ end
 --  SECTION HEADER
 -- ──────────────────────────────────────────────
 function ShadowUI:_Header(parent, ctrl)
-    local row = MkRow(parent, 26)
-    local rOff = 0
+    local row=MkRow(parent,28)
+    local rOff=0
 
     if ctrl.gear then
-        local G = New("TextButton", {
+        local G=New("TextButton",{
             Parent=row, BackgroundTransparency=1,
-            Position=UDim2.new(1,-18,0.5,-8), Size=UDim2.new(0,16,0,16),
-            Font=Enum.Font.Gotham, Text="⚙", TextColor3=T.TextSec, TextSize=13, ZIndex=3,
+            Position=UDim2.new(1,-20,0.5,-8), Size=UDim2.new(0,16,0,16),
+            Font=Enum.Font.Gotham, Text="⚙",
+            TextColor3=T.TextSec, TextSize=13, ZIndex=4,
         })
-        G.MouseEnter:Connect(function() G.TextColor3=T.TextPri end)
-        G.MouseLeave:Connect(function() G.TextColor3=T.TextSec end)
-        rOff=20
+        G.MouseEnter:Connect(function() Tw(G,{TextColor3=T.TextAccent},.08) end)
+        G.MouseLeave:Connect(function() Tw(G,{TextColor3=T.TextSec},.08) end)
+        rOff=22
     end
 
-    if ctrl.toggle ~= nil then
-        local tv = ctrl.toggle or false
-        local TTr = New("Frame", {
+    if ctrl.toggle~=nil then
+        local tv=ctrl.toggle or false
+        local TTr=New("Frame",{
             Parent=row, BackgroundColor3=tv and T.ToggleOn or T.ToggleOff,
-            Position=UDim2.new(1,-(24+rOff),0.5,-7), Size=UDim2.new(0,22,0,13), ZIndex=3,
+            Position=UDim2.new(1,-(26+rOff),0.5,-7), Size=UDim2.new(0,24,0,13), ZIndex=4,
         })
-        Corn(7, TTr)
-        local TTh = New("Frame", {
+        Corn(7,TTr)
+        local TTh=New("Frame",{
             Parent=TTr, BackgroundColor3=T.White,
-            Position=tv and UDim2.new(1,-11,0.5,-5) or UDim2.new(0,2,0.5,-5),
-            Size=UDim2.new(0,9,0,9), ZIndex=4,
+            Position=tv and UDim2.new(1,-12,0.5,-5) or UDim2.new(0,2,0.5,-5),
+            Size=UDim2.new(0,9,0,9), ZIndex=5,
         })
-        Corn(5, TTh)
-        local TB = New("TextButton", {
-            Parent=TTr, BackgroundTransparency=1, Size=UDim2.new(1,0,1,0), Text="", ZIndex=5,
+        Corn(5,TTh)
+        local TB=New("TextButton",{
+            Parent=TTr, BackgroundTransparency=1,
+            Size=UDim2.new(1,0,1,0), Text="", ZIndex=6,
         })
         TB.MouseButton1Click:Connect(function()
             tv=not tv
             Tw(TTr,{BackgroundColor3=tv and T.ToggleOn or T.ToggleOff},.12)
-            Tw(TTh,{Position=tv and UDim2.new(1,-11,0.5,-5) or UDim2.new(0,2,0.5,-5)},.12)
+            Tw(TTh,{Position=tv and UDim2.new(1,-12,0.5,-5) or UDim2.new(0,2,0.5,-5)},.12)
             if ctrl.callback then ctrl.callback(tv) end
         end)
-        rOff=rOff+26
+        rOff=rOff+28
     end
 
-    -- Texto cinza
-    Lbl(row, ctrl.text or "", 11, T.TextSec, Enum.Font.Gotham,
+    MkLbl(row, ctrl.text or "", 11, T.TextSec, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, nil, UDim2.new(1,-(rOff+4),1,0), 3)
 
-    -- Linha separadora embaixo
-    New("Frame", {
+    -- Linha separadora
+    New("Frame",{
         Parent=row, BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1), Size=UDim2.new(1,0,0,1), ZIndex=3,
     })
@@ -824,8 +953,8 @@ end
 --  LABEL
 -- ──────────────────────────────────────────────
 function ShadowUI:_Label(parent, ctrl)
-    local row = MkRow(parent, 20)
-    Lbl(row, ctrl.text or "", 11, ctrl.color or T.TextSec, Enum.Font.Gotham,
+    local row=MkRow(parent,20)
+    MkLbl(row, ctrl.text or "", 11, ctrl.color or T.TextSec, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, nil, UDim2.new(1,0,1,0), 3)
     return row
 end
@@ -834,7 +963,7 @@ end
 --  PUBLIC API
 -- ══════════════════════════════════════════════
 local function Add(sec, side, cfg)
-    local list = (side=="right") and sec._right or sec._left
+    local list=(side=="right") and sec._right or sec._left
     list[#list+1]=cfg
     if sec._active then
         local ui    = sec._ui
@@ -844,23 +973,17 @@ local function Add(sec, side, cfg)
     return cfg
 end
 
-function ShadowUI:Toggle(sec, side, cfg)
-    cfg=cfg or {}; cfg.type="toggle";   return Add(sec,side,cfg) end
-function ShadowUI:Slider(sec, side, cfg)
-    cfg=cfg or {}; cfg.type="slider";   return Add(sec,side,cfg) end
-function ShadowUI:Dropdown(sec, side, cfg)
-    cfg=cfg or {}; cfg.type="dropdown"; return Add(sec,side,cfg) end
-function ShadowUI:SectionHeader(sec, side, cfg)
-    cfg=cfg or {}; cfg.type="header";   return Add(sec,side,cfg) end
-function ShadowUI:Label(sec, side, cfg)
-    cfg=cfg or {}; cfg.type="label";    return Add(sec,side,cfg) end
+function ShadowUI:Toggle(s,side,cfg)      cfg=cfg or{};cfg.type="toggle";   return Add(s,side,cfg) end
+function ShadowUI:Slider(s,side,cfg)      cfg=cfg or{};cfg.type="slider";   return Add(s,side,cfg) end
+function ShadowUI:Dropdown(s,side,cfg)    cfg=cfg or{};cfg.type="dropdown"; return Add(s,side,cfg) end
+function ShadowUI:SectionHeader(s,side,cfg) cfg=cfg or{};cfg.type="header"; return Add(s,side,cfg) end
+function ShadowUI:Label(s,side,cfg)       cfg=cfg or{};cfg.type="label";    return Add(s,side,cfg) end
 
 function ShadowUI:BindToggleKey(key)
     UserInputService.InputBegan:Connect(function(i,gpe)
         if gpe then return end
         if i.KeyCode==key then
-            self._visible=not self._visible
-            self.Win.Visible=self._visible
+            self.ToggleBtn.MouseButton1Click:Fire()
         end
     end)
 end
