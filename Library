@@ -963,7 +963,7 @@ function ShadowUI:_BSlider(parent, ctrl)
 end
 
 -- ══════════════════════════════════════════════
---  DROPDOWN  — CORRIGIDO (mostra opções corretamente)
+--  DROPDOWN  — v3.1 fix: ScrollingFrame como container direto
 -- ══════════════════════════════════════════════
 function ShadowUI:_BDropdown(parent, ctrl)
     local opts = ctrl.options or {}
@@ -979,12 +979,12 @@ function ShadowUI:_BDropdown(parent, ctrl)
         Position=UDim2.new(0,0,0,18), Size=UDim2.new(1,0,0,27), ZIndex=3,
     })
     Corn(5, Box)
-    Stro(T.Border, 1, Box)
+    local BoxStroke = Stro(T.Border, 1, Box)
 
     local Sel = MkTxt(Box, tostring(val), 11, T.TxtPri, Enum.Font.Gotham,
         Enum.TextXAlignment.Left, UDim2.new(0,9,0,0), UDim2.new(1,-22,1,0), 4)
 
-    local ArrowLbl = MkTxt(Box, "▾", 11, T.TxtSec, Enum.Font.GothamBold,
+    local ArrowLbl = MkTxt(Box, "v", 10, T.TxtSec, Enum.Font.GothamBold,
         Enum.TextXAlignment.Center, UDim2.new(1,-18,0,0), UDim2.new(0,14,1,0), 4)
 
     local open  = false
@@ -996,9 +996,8 @@ function ShadowUI:_BDropdown(parent, ctrl)
         if DropF and DropF.Parent then DropF:Destroy() end
         if OvF  and OvF.Parent   then OvF:Destroy()   end
         DropF=nil; OvF=nil
-        pcall(function() Stro(T.Border, 1, Box) end)
+        pcall(function() BoxStroke.Color = T.Border end)
         Tw(Box, {BackgroundColor3=T.DropBg}, .08)
-        Tw(ArrowLbl, {Rotation=0}, .12)
         if _activeDropClose == Close then _activeDropClose=nil end
     end
 
@@ -1026,95 +1025,106 @@ function ShadowUI:_BDropdown(parent, ctrl)
         if open then return end
         open=true; _activeDropClose=Close
 
-        -- Destaca o box
-        pcall(function() Stro(T.Accent, 1, Box) end)
+        BoxStroke.Color = T.Accent
         Tw(Box, {BackgroundColor3=T.DropHov}, .08)
-        Tw(ArrowLbl, {Rotation=180}, .14)
 
-        local itemH  = 26
+        local ITEM_H = 27
+        local PAD    = 4
         local maxVis = math.min(#opts, 6)
-        local listH  = maxVis * itemH + 8
+        local winH   = maxVis * ITEM_H + PAD*2
 
-        -- Overlay fecha ao clicar fora
+        -- Overlay invisível fecha ao clicar fora
         OvF = New("TextButton", {
             Parent=self.Gui, BackgroundTransparency=1,
             Size=UDim2.new(1,0,1,0), Text="", ZIndex=48,
         })
         OvF.MouseButton1Click:Connect(Close)
 
-        -- Calcula posição absoluta do Box
         local ap = Box.AbsolutePosition
         local as = Box.AbsoluteSize
 
+        -- Frame externo: apenas border+shadow, SEM ClipsDescendants
         DropF = New("Frame", {
-            Parent=self.Gui, BackgroundColor3=T.DropBg,
-            Position=UDim2.new(0, ap.X, 0, ap.Y + as.Y + 4),
-            Size=UDim2.new(0, as.X, 0, listH),
-            ZIndex=50, ClipsDescendants=true,
+            Parent=self.Gui,
+            BackgroundColor3=T.DropBg,
+            Position=UDim2.new(0, ap.X, 0, ap.Y + as.Y + 3),
+            Size=UDim2.new(0, as.X, 0, winH),
+            ZIndex=50,
+            ClipsDescendants=false,
         })
         Corn(6, DropF)
         Stro(T.Accent, 1, DropF)
 
-        -- Sombra do dropdown
+        -- Sombra
         New("ImageLabel", {
             Parent=DropF, BackgroundTransparency=1,
-            Position=UDim2.new(0,-10,0,-10), Size=UDim2.new(1,20,1,20), ZIndex=49,
-            Image="rbxassetid://6014261993", ImageColor3=Color3.new(0,0,0),
-            ImageTransparency=0.45, ScaleType=Enum.ScaleType.Slice,
-            SliceCenter=Rect.new(49,49,450,450),
+            Position=UDim2.new(0,-12,0,-12), Size=UDim2.new(1,24,1,24),
+            ZIndex=49, Image="rbxassetid://6014261993",
+            ImageColor3=Color3.new(0,0,0), ImageTransparency=0.4,
+            ScaleType=Enum.ScaleType.Slice, SliceCenter=Rect.new(49,49,450,450),
         })
 
-        -- Se mais de maxVis itens, usar ScrollingFrame
-        local ItemParent
-        if #opts > 6 then
-            local SF = New("ScrollingFrame", {
-                Parent=DropF, BackgroundTransparency=1, BorderSizePixel=0,
-                Size=UDim2.new(1,0,1,0),
-                ScrollBarThickness=2, ScrollBarImageColor3=T.AccentDim,
-                CanvasSize=UDim2.new(0,0,0,#opts*itemH+8),
-                ZIndex=51, ScrollingDirection=Enum.ScrollingDirection.Y,
-            })
-            Pad(3,3,3,3,SF)
-            ListL(SF, nil, 0)
-            ItemParent = SF
-        else
-            Pad(3,3,3,3,DropF)
-            ListL(DropF, nil, 0)
-            ItemParent = DropF
-        end
+        -- ScrollingFrame preenche o DropF inteiro — é ele que contém os itens
+        local totalH = #opts * ITEM_H + PAD*2
+        local SF = New("ScrollingFrame", {
+            Parent=DropF,
+            BackgroundTransparency=1,
+            BorderSizePixel=0,
+            Position=UDim2.new(0,0,0,0),
+            Size=UDim2.new(1,0,1,0),
+            CanvasSize=UDim2.new(0,0,0,totalH),
+            ScrollBarThickness=3,
+            ScrollBarImageColor3=T.AccentDim,
+            ScrollingDirection=Enum.ScrollingDirection.Y,
+            ZIndex=51,
+            ClipsDescendants=true,
+        })
 
-        for _, opt in ipairs(opts) do
-            local isS = (opt == val)
+        -- Posiciona cada item manualmente (sem UIListLayout) — 100% confiável
+        for i, opt in ipairs(opts) do
+            local isS = (tostring(opt) == tostring(val))
+            local yPos = PAD + (i-1)*ITEM_H
+
             local Item = New("TextButton", {
-                Parent=ItemParent,
-                BackgroundColor3=isS and T.RowHov or T.DropBg,
+                Parent=SF,
+                BackgroundColor3=isS and T.AccentDim or T.DropBg,
                 BackgroundTransparency=isS and 0 or 1,
-                Size=UDim2.new(1,0,0,itemH),
+                Position=UDim2.new(0, PAD, 0, yPos),
+                Size=UDim2.new(1, -PAD*2, 0, ITEM_H-2),
                 Font=isS and Enum.Font.GothamBold or Enum.Font.Gotham,
                 Text=tostring(opt),
                 TextColor3=isS and T.TxtAcc or T.TxtSec,
-                TextSize=11, TextXAlignment=Enum.TextXAlignment.Left,
-                AutoButtonColor=false, ZIndex=52,
+                TextSize=11,
+                TextXAlignment=Enum.TextXAlignment.Left,
+                AutoButtonColor=false,
+                ZIndex=53,
+                ClipsDescendants=false,
             })
-            Pad(8,0,0,0, Item)
             Corn(4, Item)
+            Pad(8,0,0,0, Item)
+
             Item.MouseEnter:Connect(function()
                 Item.BackgroundTransparency=0
                 Tw(Item, {BackgroundColor3=T.DropHov, TextColor3=T.TxtPri}, .07)
             end)
             Item.MouseLeave:Connect(function()
-                if opt ~= val then
+                if tostring(opt) ~= tostring(val) then
                     Item.BackgroundTransparency=1
                     Item.TextColor3=T.TxtSec
                 else
-                    Item.BackgroundColor3=T.RowHov
+                    Item.BackgroundColor3=T.AccentDim
+                    Item.BackgroundTransparency=0
                 end
             end)
             Item.MouseButton1Click:Connect(function() SetVal(opt) end)
         end
     end)
 
-    ctrl._setValue=SetVal; ctrl._getValue=function() return val end
+    ctrl._setValue = function(v)
+        val=v; ctrl._val=v
+        Sel.Text=tostring(v)
+    end
+    ctrl._getValue = function() return val end
     return Wrap
 end
 
@@ -1183,12 +1193,22 @@ function ShadowUI:_BLabel(parent, ctrl)
 end
 
 -- ══════════════════════════════════════════════
---  ABA CONFIG
+--  ABA CONFIG  — sempre adicionada por último
 -- ══════════════════════════════════════════════
 function ShadowUI:_BuildConfigTab()
-    local cat = self:AddCategory("⚙  Config")
+    -- NÃO cria a categoria aqui; ela será criada em :Finalize()
+    -- Guardamos apenas a lógica para quando for invocada
+    self._configReady = false
+end
+
+function ShadowUI:_SpawnConfigTab()
+    if self._configReady then return end
+    self._configReady = true
+
+    local cat = self:AddCategory("Config")
     local sec = self:AddSection(cat, "Settings")
 
+    -- Tema
     local themeNames = {}
     for k in pairs(Themes) do table.insert(themeNames, k) end
     table.sort(themeNames)
@@ -1199,8 +1219,9 @@ function ShadowUI:_BuildConfigTab()
         callback=function(v) self:_ApplyTheme(v) end,
     }
 
+    -- Config file dropdown
     local cfgDrop = {
-        type="dropdown", text="Config",
+        type="dropdown", text="Config File",
         options=ListConfigs(), default="default",
     }
 
@@ -1208,50 +1229,67 @@ function ShadowUI:_BuildConfigTab()
         cfgDrop.options = ListConfigs()
     end
 
-    self._cfgDropCtrl = cfgDrop
-    self._cfgSection  = sec
-
-    -- Botão helper
-    local function CfgBtnCtrl(label, bgCol, hoverCol, cb)
+    -- Botão simples (estilo igual demais controles)
+    local function MkBtn(label, cb)
         return {
             type="__custom",
             _build=function(parent)
-                local row = MkRow(parent, 30)
-                local Btn = New("TextButton", {
-                    Parent=row, BackgroundColor3=bgCol or T.Accent,
-                    Size=UDim2.new(1,0,1,0), Text=label,
-                    Font=Enum.Font.GothamBold, TextColor3=T.White,
-                    TextSize=11, AutoButtonColor=false, ZIndex=3,
+                local row = MkRow(parent, 32)
+                local Bg = New("Frame",{
+                    Parent=row, BackgroundColor3=T.DropBg,
+                    Size=UDim2.new(1,0,1,0), ZIndex=3,
                 })
-                Corn(5, Btn); Stro(T.Border, 1, Btn)
-                Btn.MouseEnter:Connect(function() Tw(Btn,{BackgroundColor3=hoverCol or T.AccentHi},.08) end)
-                Btn.MouseLeave:Connect(function() Tw(Btn,{BackgroundColor3=bgCol or T.Accent},.08) end)
+                Corn(5,Bg); Stro(T.Border,1,Bg)
+                local Btn = New("TextButton",{
+                    Parent=Bg, BackgroundTransparency=1,
+                    Size=UDim2.new(1,0,1,0), Text=label,
+                    Font=Enum.Font.GothamBold, TextColor3=T.TxtSec,
+                    TextSize=11, AutoButtonColor=false, ZIndex=4,
+                })
+                Btn.MouseEnter:Connect(function()
+                    Tw(Bg,{BackgroundColor3=T.RowHov},.08)
+                    Tw(Btn,{TextColor3=T.TxtPri},.08)
+                end)
+                Btn.MouseLeave:Connect(function()
+                    Tw(Bg,{BackgroundColor3=T.DropBg},.08)
+                    Tw(Btn,{TextColor3=T.TxtSec},.08)
+                end)
                 Btn.MouseButton1Click:Connect(function() if cb then cb() end end)
                 return row
             end,
         }
     end
 
-    -- Botões duplos lado a lado
-    local function DualBtn(lLabel, lBg, lHov, lCb, rLabel, rBg, rHov, rCb)
+    -- Dois botões lado a lado (estilo igual demais)
+    local function MkDualBtn(lbl1, cb1, lbl2, cb2)
         return {
             type="__custom",
             _build=function(parent)
-                local row = MkRow(parent, 30)
-                local function MkHalf(pos, sz, label, bg, hov, cb)
-                    local f = New("Frame",{Parent=row,BackgroundTransparency=1,Position=pos,Size=sz,ZIndex=3})
+                local row = MkRow(parent, 32)
+                local function Half(pos, sz, label, cb)
+                    local Bg = New("Frame",{
+                        Parent=row, BackgroundColor3=T.DropBg,
+                        Position=pos, Size=sz, ZIndex=3,
+                    })
+                    Corn(5,Bg); Stro(T.Border,1,Bg)
                     local Btn = New("TextButton",{
-                        Parent=f, BackgroundColor3=bg, Size=UDim2.new(1,0,1,0),
-                        Text=label, Font=Enum.Font.GothamBold, TextColor3=T.White,
+                        Parent=Bg, BackgroundTransparency=1,
+                        Size=UDim2.new(1,0,1,0), Text=label,
+                        Font=Enum.Font.GothamBold, TextColor3=T.TxtSec,
                         TextSize=11, AutoButtonColor=false, ZIndex=4,
                     })
-                    Corn(5,Btn); Stro(T.Border,1,Btn)
-                    Btn.MouseEnter:Connect(function() Tw(Btn,{BackgroundColor3=hov},.08) end)
-                    Btn.MouseLeave:Connect(function() Tw(Btn,{BackgroundColor3=bg},.08) end)
+                    Btn.MouseEnter:Connect(function()
+                        Tw(Bg,{BackgroundColor3=T.RowHov},.08)
+                        Tw(Btn,{TextColor3=T.TxtPri},.08)
+                    end)
+                    Btn.MouseLeave:Connect(function()
+                        Tw(Bg,{BackgroundColor3=T.DropBg},.08)
+                        Tw(Btn,{TextColor3=T.TxtSec},.08)
+                    end)
                     Btn.MouseButton1Click:Connect(function() if cb then cb() end end)
                 end
-                MkHalf(UDim2.new(0,0,0,0),    UDim2.new(0.5,-3,1,0), lLabel, lBg, lHov, lCb)
-                MkHalf(UDim2.new(0.5,3,0,0),  UDim2.new(0.5,-3,1,0), rLabel, rBg, rHov, rCb)
+                Half(UDim2.new(0,0,0,0),   UDim2.new(0.5,-3,1,0), lbl1, cb1)
+                Half(UDim2.new(0.5,3,0,0), UDim2.new(0.5,-3,1,0), lbl2, cb2)
                 return row
             end,
         }
@@ -1261,27 +1299,23 @@ function ShadowUI:_BuildConfigTab()
         themeDrop,
         {type="header", text="Config Files"},
         cfgDrop,
-        DualBtn(
-            "💾  Save",  T.Accent,                T.AccentHi,
-            function()
+        MkDualBtn(
+            "Save Config", function()
                 local name = cfgDrop._getValue and cfgDrop._getValue() or "default"
                 self:SaveConfig(name); RefreshCfgList()
             end,
-            "📂  Load", T.DropBg, T.RowHov,
-            function()
+            "Load Config", function()
                 local name = cfgDrop._getValue and cfgDrop._getValue() or "default"
                 self:LoadConfig(name)
             end
         ),
-        DualBtn(
-            "✏  New",  T.DropBg, T.RowHov,
-            function()
+        MkDualBtn(
+            "New Config", function()
                 local name = "config_"..tostring(os.time())
                 self:SaveConfig(name); RefreshCfgList()
                 if cfgDrop._setValue then cfgDrop._setValue(name) end
             end,
-            "🗑  Delete", Color3.fromRGB(175,38,38), Color3.fromRGB(215,58,58),
-            function()
+            "Delete Config", function()
                 local name = cfgDrop._getValue and cfgDrop._getValue() or "default"
                 if name ~= "default" then
                     pcall(delfile, CONFIG_DIR.."/"..name..CONFIG_EXT)
@@ -1431,9 +1465,21 @@ function ShadowUI:BindToggleKey(key)
     end)
 end
 
-function ShadowUI:OpenFirst()
+-- Finaliza a UI: adiciona Config como última aba e abre a primeira categoria do usuário
+function ShadowUI:Finalize()
+    self:_SpawnConfigTab()
     for _, cat in ipairs(self._sidebar) do
-        if cat.Name ~= "⚙  Config" then
+        if cat.Name ~= "Config" then
+            cat._row.MouseButton1Click:Fire()
+            return
+        end
+    end
+end
+
+function ShadowUI:OpenFirst()
+    self:_SpawnConfigTab()
+    for _, cat in ipairs(self._sidebar) do
+        if cat.Name ~= "Config" then
             cat._row.MouseButton1Click:Fire()
             return
         end
