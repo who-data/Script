@@ -1,0 +1,2090 @@
+--[[
+    ╔══════════════════════════════════════════════════════════╗
+    ║              S H A D O W  U I  —  v6.0                  ║
+    ║         Roblox UI Library  |  github/who-data            ║
+    ╚══════════════════════════════════════════════════════════╝
+--]]
+
+local ShadowUI   = {}
+ShadowUI.__index = ShadowUI
+
+local Players      = game:GetService("Players")
+local UIS          = game:GetService("UserInputService")
+local TS           = game:GetService("TweenService")
+local HS           = game:GetService("HttpService")
+
+local LP   = Players.LocalPlayer
+local PGui = LP:WaitForChild("PlayerGui")
+
+-- ══════════════════════════════════════════════
+--  THEMES
+-- ══════════════════════════════════════════════
+local Themes = {
+    Dark = {
+        Bg        = Color3.fromRGB(9,   9,   12),
+        Panel     = Color3.fromRGB(12,  12,  16),
+        Sidebar   = Color3.fromRGB(11,  11,  15),
+        Header    = Color3.fromRGB(10,  10,  14),
+        TabBar    = Color3.fromRGB(13,  13,  17),
+        RowHov    = Color3.fromRGB(20,  20,  28),
+        Border    = Color3.fromRGB(26,  26,  36),
+        BorderHi  = Color3.fromRGB(44,  42,  60),
+        Accent    = Color3.fromRGB(108, 99,  255),
+        AccentHi  = Color3.fromRGB(148, 140, 255),
+        AccentDim = Color3.fromRGB(40,  36,  70),
+        TogOn     = Color3.fromRGB(46,  196, 110),
+        TogOff    = Color3.fromRGB(32,  32,  44),
+        SlTrack   = Color3.fromRGB(22,  22,  32),
+        DropBg    = Color3.fromRGB(13,  13,  18),
+        DropItem  = Color3.fromRGB(18,  18,  26),
+        DropHov   = Color3.fromRGB(26,  24,  38),
+        TxtPri    = Color3.fromRGB(220, 220, 234),
+        TxtSec    = Color3.fromRGB(78,  78,  102),
+        TxtDim    = Color3.fromRGB(40,  40,  55),
+        TxtAcc    = Color3.fromRGB(148, 140, 255),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Midnight = {
+        Bg        = Color3.fromRGB(5,   7,   16),
+        Panel     = Color3.fromRGB(7,   10,  22),
+        Sidebar   = Color3.fromRGB(6,   9,   20),
+        Header    = Color3.fromRGB(5,   8,   18),
+        TabBar    = Color3.fromRGB(8,   11,  24),
+        RowHov    = Color3.fromRGB(14,  18,  36),
+        Border    = Color3.fromRGB(20,  28,  52),
+        BorderHi  = Color3.fromRGB(36,  46,  80),
+        Accent    = Color3.fromRGB(64,  160, 255),
+        AccentHi  = Color3.fromRGB(110, 190, 255),
+        AccentDim = Color3.fromRGB(24,  58,  110),
+        TogOn     = Color3.fromRGB(46,  196, 110),
+        TogOff    = Color3.fromRGB(20,  28,  52),
+        SlTrack   = Color3.fromRGB(14,  20,  42),
+        DropBg    = Color3.fromRGB(7,   10,  24),
+        DropItem  = Color3.fromRGB(10,  14,  30),
+        DropHov   = Color3.fromRGB(16,  22,  44),
+        TxtPri    = Color3.fromRGB(210, 225, 255),
+        TxtSec    = Color3.fromRGB(64,  84,  136),
+        TxtDim    = Color3.fromRGB(32,  44,  76),
+        TxtAcc    = Color3.fromRGB(110, 190, 255),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Rose = {
+        Bg        = Color3.fromRGB(12,  9,   11),
+        Panel     = Color3.fromRGB(17,  12,  15),
+        Sidebar   = Color3.fromRGB(14,  10,  13),
+        Header    = Color3.fromRGB(12,  9,   11),
+        TabBar    = Color3.fromRGB(15,  11,  14),
+        RowHov    = Color3.fromRGB(28,  18,  24),
+        Border    = Color3.fromRGB(42,  26,  34),
+        BorderHi  = Color3.fromRGB(66,  40,  52),
+        Accent    = Color3.fromRGB(236, 72,  153),
+        AccentHi  = Color3.fromRGB(255, 130, 190),
+        AccentDim = Color3.fromRGB(90,  30,  60),
+        TogOn     = Color3.fromRGB(46,  196, 110),
+        TogOff    = Color3.fromRGB(42,  26,  34),
+        SlTrack   = Color3.fromRGB(28,  16,  22),
+        DropBg    = Color3.fromRGB(16,  11,  14),
+        DropItem  = Color3.fromRGB(22,  15,  19),
+        DropHov   = Color3.fromRGB(32,  20,  27),
+        TxtPri    = Color3.fromRGB(240, 220, 228),
+        TxtSec    = Color3.fromRGB(106, 64,  84),
+        TxtDim    = Color3.fromRGB(56,  32,  44),
+        TxtAcc    = Color3.fromRGB(255, 130, 190),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Neon = {
+        Bg        = Color3.fromRGB(8,   10,  10),
+        Panel     = Color3.fromRGB(11,  14,  13),
+        Sidebar   = Color3.fromRGB(9,   12,  11),
+        Header    = Color3.fromRGB(8,   10,  10),
+        TabBar    = Color3.fromRGB(10,  13,  12),
+        RowHov    = Color3.fromRGB(18,  26,  22),
+        Border    = Color3.fromRGB(24,  36,  30),
+        BorderHi  = Color3.fromRGB(38,  58,  48),
+        Accent    = Color3.fromRGB(0,   255, 170),
+        AccentHi  = Color3.fromRGB(100, 255, 210),
+        AccentDim = Color3.fromRGB(0,   60,  40),
+        TogOn     = Color3.fromRGB(0,   255, 170),
+        TogOff    = Color3.fromRGB(22,  34,  28),
+        SlTrack   = Color3.fromRGB(16,  24,  20),
+        DropBg    = Color3.fromRGB(10,  14,  12),
+        DropItem  = Color3.fromRGB(14,  20,  17),
+        DropHov   = Color3.fromRGB(20,  30,  25),
+        TxtPri    = Color3.fromRGB(210, 245, 230),
+        TxtSec    = Color3.fromRGB(56,  100, 78),
+        TxtDim    = Color3.fromRGB(28,  50,  38),
+        TxtAcc    = Color3.fromRGB(100, 255, 210),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Crimson = {
+        Bg        = Color3.fromRGB(11,  8,   8),
+        Panel     = Color3.fromRGB(15,  11,  11),
+        Sidebar   = Color3.fromRGB(13,  9,   9),
+        Header    = Color3.fromRGB(11,  8,   8),
+        TabBar    = Color3.fromRGB(14,  10,  10),
+        RowHov    = Color3.fromRGB(28,  16,  16),
+        Border    = Color3.fromRGB(40,  22,  22),
+        BorderHi  = Color3.fromRGB(64,  34,  34),
+        Accent    = Color3.fromRGB(220, 38,  38),
+        AccentHi  = Color3.fromRGB(255, 90,  90),
+        AccentDim = Color3.fromRGB(80,  16,  16),
+        TogOn     = Color3.fromRGB(220, 38,  38),
+        TogOff    = Color3.fromRGB(38,  20,  20),
+        SlTrack   = Color3.fromRGB(26,  14,  14),
+        DropBg    = Color3.fromRGB(14,  10,  10),
+        DropItem  = Color3.fromRGB(20,  13,  13),
+        DropHov   = Color3.fromRGB(30,  18,  18),
+        TxtPri    = Color3.fromRGB(245, 220, 220),
+        TxtSec    = Color3.fromRGB(110, 58,  58),
+        TxtDim    = Color3.fromRGB(58,  28,  28),
+        TxtAcc    = Color3.fromRGB(255, 110, 110),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Ocean = {
+        Bg        = Color3.fromRGB(6,   12,  18),
+        Panel     = Color3.fromRGB(9,   16,  24),
+        Sidebar   = Color3.fromRGB(7,   14,  21),
+        Header    = Color3.fromRGB(6,   12,  18),
+        TabBar    = Color3.fromRGB(8,   15,  22),
+        RowHov    = Color3.fromRGB(14,  26,  40),
+        Border    = Color3.fromRGB(18,  34,  52),
+        BorderHi  = Color3.fromRGB(28,  54,  80),
+        Accent    = Color3.fromRGB(14,  165, 233),
+        AccentHi  = Color3.fromRGB(56,  200, 255),
+        AccentDim = Color3.fromRGB(8,   50,  80),
+        TogOn     = Color3.fromRGB(14,  165, 233),
+        TogOff    = Color3.fromRGB(14,  32,  50),
+        SlTrack   = Color3.fromRGB(10,  22,  36),
+        DropBg    = Color3.fromRGB(8,   14,  22),
+        DropItem  = Color3.fromRGB(12,  20,  30),
+        DropHov   = Color3.fromRGB(16,  28,  44),
+        TxtPri    = Color3.fromRGB(200, 230, 250),
+        TxtSec    = Color3.fromRGB(48,  90,  130),
+        TxtDim    = Color3.fromRGB(24,  46,  70),
+        TxtAcc    = Color3.fromRGB(56,  200, 255),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Forest = {
+        Bg        = Color3.fromRGB(8,   12,  8),
+        Panel     = Color3.fromRGB(11,  16,  11),
+        Sidebar   = Color3.fromRGB(9,   13,  9),
+        Header    = Color3.fromRGB(8,   12,  8),
+        TabBar    = Color3.fromRGB(10,  15,  10),
+        RowHov    = Color3.fromRGB(18,  28,  16),
+        Border    = Color3.fromRGB(26,  40,  22),
+        BorderHi  = Color3.fromRGB(40,  62,  34),
+        Accent    = Color3.fromRGB(74,  222, 128),
+        AccentHi  = Color3.fromRGB(134, 239, 172),
+        AccentDim = Color3.fromRGB(22,  64,  36),
+        TogOn     = Color3.fromRGB(74,  222, 128),
+        TogOff    = Color3.fromRGB(20,  34,  18),
+        SlTrack   = Color3.fromRGB(14,  22,  12),
+        DropBg    = Color3.fromRGB(10,  14,  10),
+        DropItem  = Color3.fromRGB(14,  20,  13),
+        DropHov   = Color3.fromRGB(20,  30,  18),
+        TxtPri    = Color3.fromRGB(215, 245, 215),
+        TxtSec    = Color3.fromRGB(60,  100, 58),
+        TxtDim    = Color3.fromRGB(30,  52,  28),
+        TxtAcc    = Color3.fromRGB(134, 239, 172),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Slate = {
+        Bg        = Color3.fromRGB(15,  18,  22),
+        Panel     = Color3.fromRGB(20,  24,  30),
+        Sidebar   = Color3.fromRGB(17,  21,  26),
+        Header    = Color3.fromRGB(15,  18,  22),
+        TabBar    = Color3.fromRGB(18,  22,  28),
+        RowHov    = Color3.fromRGB(28,  34,  44),
+        Border    = Color3.fromRGB(36,  44,  56),
+        BorderHi  = Color3.fromRGB(56,  68,  86),
+        Accent    = Color3.fromRGB(148, 163, 184),
+        AccentHi  = Color3.fromRGB(203, 213, 225),
+        AccentDim = Color3.fromRGB(44,  52,  66),
+        TogOn     = Color3.fromRGB(100, 200, 140),
+        TogOff    = Color3.fromRGB(30,  36,  46),
+        SlTrack   = Color3.fromRGB(22,  28,  36),
+        DropBg    = Color3.fromRGB(18,  22,  28),
+        DropItem  = Color3.fromRGB(24,  30,  38),
+        DropHov   = Color3.fromRGB(32,  40,  52),
+        TxtPri    = Color3.fromRGB(226, 232, 240),
+        TxtSec    = Color3.fromRGB(82,  96,  116),
+        TxtDim    = Color3.fromRGB(44,  52,  66),
+        TxtAcc    = Color3.fromRGB(203, 213, 225),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Amber = {
+        Bg        = Color3.fromRGB(12,  10,  6),
+        Panel     = Color3.fromRGB(17,  14,  8),
+        Sidebar   = Color3.fromRGB(14,  11,  6),
+        Header    = Color3.fromRGB(12,  10,  6),
+        TabBar    = Color3.fromRGB(15,  12,  7),
+        RowHov    = Color3.fromRGB(30,  22,  8),
+        Border    = Color3.fromRGB(48,  34,  10),
+        BorderHi  = Color3.fromRGB(72,  52,  14),
+        Accent    = Color3.fromRGB(251, 191, 36),
+        AccentHi  = Color3.fromRGB(255, 220, 100),
+        AccentDim = Color3.fromRGB(90,  64,  10),
+        TogOn     = Color3.fromRGB(251, 191, 36),
+        TogOff    = Color3.fromRGB(44,  32,  8),
+        SlTrack   = Color3.fromRGB(28,  20,  6),
+        DropBg    = Color3.fromRGB(15,  12,  7),
+        DropItem  = Color3.fromRGB(22,  17,  9),
+        DropHov   = Color3.fromRGB(34,  25,  10),
+        TxtPri    = Color3.fromRGB(255, 245, 210),
+        TxtSec    = Color3.fromRGB(120, 90,  28),
+        TxtDim    = Color3.fromRGB(60,  44,  12),
+        TxtAcc    = Color3.fromRGB(255, 220, 100),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Aurora = {
+        Bg        = Color3.fromRGB(6,   10,  14),
+        Panel     = Color3.fromRGB(9,   14,  20),
+        Sidebar   = Color3.fromRGB(7,   12,  17),
+        Header    = Color3.fromRGB(6,   10,  14),
+        TabBar    = Color3.fromRGB(8,   13,  18),
+        RowHov    = Color3.fromRGB(14,  24,  34),
+        Border    = Color3.fromRGB(20,  36,  52),
+        BorderHi  = Color3.fromRGB(32,  58,  80),
+        Accent    = Color3.fromRGB(52,  211, 153),
+        AccentHi  = Color3.fromRGB(110, 240, 190),
+        AccentDim = Color3.fromRGB(12,  60,  44),
+        TogOn     = Color3.fromRGB(52,  211, 153),
+        TogOff    = Color3.fromRGB(14,  36,  28),
+        SlTrack   = Color3.fromRGB(10,  22,  18),
+        DropBg    = Color3.fromRGB(8,   13,  19),
+        DropItem  = Color3.fromRGB(12,  19,  27),
+        DropHov   = Color3.fromRGB(18,  30,  44),
+        TxtPri    = Color3.fromRGB(200, 240, 225),
+        TxtSec    = Color3.fromRGB(44,  100, 76),
+        TxtDim    = Color3.fromRGB(22,  52,  40),
+        TxtAcc    = Color3.fromRGB(110, 240, 190),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Sakura = {
+        Bg        = Color3.fromRGB(14,  9,   14),
+        Panel     = Color3.fromRGB(20,  13,  20),
+        Sidebar   = Color3.fromRGB(16,  10,  16),
+        Header    = Color3.fromRGB(14,  9,   14),
+        TabBar    = Color3.fromRGB(18,  11,  18),
+        RowHov    = Color3.fromRGB(34,  18,  34),
+        Border    = Color3.fromRGB(52,  26,  52),
+        BorderHi  = Color3.fromRGB(80,  40,  80),
+        Accent    = Color3.fromRGB(244, 114, 182),
+        AccentHi  = Color3.fromRGB(255, 170, 210),
+        AccentDim = Color3.fromRGB(90,  30,  70),
+        TogOn     = Color3.fromRGB(244, 114, 182),
+        TogOff    = Color3.fromRGB(50,  22,  44),
+        SlTrack   = Color3.fromRGB(30,  14,  28),
+        DropBg    = Color3.fromRGB(18,  11,  18),
+        DropItem  = Color3.fromRGB(26,  15,  26),
+        DropHov   = Color3.fromRGB(40,  22,  38),
+        TxtPri    = Color3.fromRGB(255, 230, 245),
+        TxtSec    = Color3.fromRGB(130, 64,  110),
+        TxtDim    = Color3.fromRGB(68,  30,  58),
+        TxtAcc    = Color3.fromRGB(255, 170, 210),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Void = {
+        Bg        = Color3.fromRGB(3,   3,   5),
+        Panel     = Color3.fromRGB(5,   5,   8),
+        Sidebar   = Color3.fromRGB(4,   4,   6),
+        Header    = Color3.fromRGB(3,   3,   5),
+        TabBar    = Color3.fromRGB(5,   5,   8),
+        RowHov    = Color3.fromRGB(12,  10,  20),
+        Border    = Color3.fromRGB(20,  16,  34),
+        BorderHi  = Color3.fromRGB(36,  28,  60),
+        Accent    = Color3.fromRGB(139, 92,  246),
+        AccentHi  = Color3.fromRGB(196, 160, 255),
+        AccentDim = Color3.fromRGB(44,  26,  90),
+        TogOn     = Color3.fromRGB(139, 92,  246),
+        TogOff    = Color3.fromRGB(24,  16,  42),
+        SlTrack   = Color3.fromRGB(14,  10,  26),
+        DropBg    = Color3.fromRGB(5,   4,   9),
+        DropItem  = Color3.fromRGB(8,   6,   14),
+        DropHov   = Color3.fromRGB(16,  12,  28),
+        TxtPri    = Color3.fromRGB(220, 210, 240),
+        TxtSec    = Color3.fromRGB(80,  60,  120),
+        TxtDim    = Color3.fromRGB(40,  28,  64),
+        TxtAcc    = Color3.fromRGB(196, 160, 255),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Copper = {
+        Bg        = Color3.fromRGB(10,  8,   6),
+        Panel     = Color3.fromRGB(14,  11,  8),
+        Sidebar   = Color3.fromRGB(12,  9,   7),
+        Header    = Color3.fromRGB(10,  8,   6),
+        TabBar    = Color3.fromRGB(13,  10,  7),
+        RowHov    = Color3.fromRGB(26,  18,  10),
+        Border    = Color3.fromRGB(40,  28,  14),
+        BorderHi  = Color3.fromRGB(62,  42,  20),
+        Accent    = Color3.fromRGB(196, 107, 48),
+        AccentHi  = Color3.fromRGB(240, 150, 80),
+        AccentDim = Color3.fromRGB(70,  36,  14),
+        TogOn     = Color3.fromRGB(196, 107, 48),
+        TogOff    = Color3.fromRGB(38,  24,  10),
+        SlTrack   = Color3.fromRGB(24,  16,  7),
+        DropBg    = Color3.fromRGB(13,  10,  7),
+        DropItem  = Color3.fromRGB(18,  13,  8),
+        DropHov   = Color3.fromRGB(28,  20,  11),
+        TxtPri    = Color3.fromRGB(245, 225, 200),
+        TxtSec    = Color3.fromRGB(110, 74,  36),
+        TxtDim    = Color3.fromRGB(58,  38,  18),
+        TxtAcc    = Color3.fromRGB(240, 150, 80),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+    Ice = {
+        Bg        = Color3.fromRGB(8,   12,  16),
+        Panel     = Color3.fromRGB(12,  17,  23),
+        Sidebar   = Color3.fromRGB(10,  14,  19),
+        Header    = Color3.fromRGB(8,   12,  16),
+        TabBar    = Color3.fromRGB(11,  16,  22),
+        RowHov    = Color3.fromRGB(18,  28,  40),
+        Border    = Color3.fromRGB(28,  44,  62),
+        BorderHi  = Color3.fromRGB(44,  68,  96),
+        Accent    = Color3.fromRGB(125, 211, 252),
+        AccentHi  = Color3.fromRGB(186, 235, 255),
+        AccentDim = Color3.fromRGB(24,  60,  90),
+        TogOn     = Color3.fromRGB(125, 211, 252),
+        TogOff    = Color3.fromRGB(18,  36,  54),
+        SlTrack   = Color3.fromRGB(12,  24,  36),
+        DropBg    = Color3.fromRGB(10,  15,  22),
+        DropItem  = Color3.fromRGB(15,  22,  32),
+        DropHov   = Color3.fromRGB(22,  34,  50),
+        TxtPri    = Color3.fromRGB(210, 235, 255),
+        TxtSec    = Color3.fromRGB(52,  100, 148),
+        TxtDim    = Color3.fromRGB(26,  50,  76),
+        TxtAcc    = Color3.fromRGB(186, 235, 255),
+        White     = Color3.fromRGB(255, 255, 255),
+    },
+}
+local T = {}
+for k, v in pairs(Themes.Dark) do T[k] = v end
+
+-- ══════════════════════════════════════════════
+--  UTILS
+-- ══════════════════════════════════════════════
+local function New(cls, props)
+    local o = Instance.new(cls)
+    for k, v in pairs(props) do
+        if k ~= "Parent" and k ~= "Children" then o[k] = v end
+    end
+    if props.Children then
+        for _, c in ipairs(props.Children) do c.Parent = o end
+    end
+    if props.Parent then o.Parent = props.Parent end
+    return o
+end
+
+local function Tween(obj, props, t, style, dir)
+    TS:Create(obj,
+        TweenInfo.new(t or .14, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out),
+        props):Play()
+end
+
+local function Corner(r, p)
+    New("UICorner", { CornerRadius = UDim.new(0, r), Parent = p })
+end
+
+local function Stroke(color, thick, p)
+    return New("UIStroke", {
+        Color = color, Thickness = thick or 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = p,
+    })
+end
+
+local function Padding(l, r, t, b, p)
+    New("UIPadding", {
+        PaddingLeft   = UDim.new(0, l),
+        PaddingRight  = UDim.new(0, r),
+        PaddingTop    = UDim.new(0, t),
+        PaddingBottom = UDim.new(0, b),
+        Parent = p,
+    })
+end
+
+local function List(p, dir, gap)
+    return New("UIListLayout", {
+        Parent = p,
+        FillDirection = dir or Enum.FillDirection.Vertical,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, gap or 0),
+    })
+end
+
+local function AutoSize(scroll, layout, extra)
+    local function upd()
+        scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + (extra or 8))
+    end
+    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(upd)
+    task.defer(upd)
+end
+
+local function Label(parent, text, size, color, font, alignX, pos, sz, z)
+    return New("TextLabel", {
+        Parent = parent,
+        BackgroundTransparency = 1,
+        Text = text or "",
+        TextSize = size or 12,
+        TextColor3 = color or T.TxtPri,
+        Font = font or Enum.Font.Gotham,
+        TextXAlignment = alignX or Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        Position = pos or UDim2.new(0, 0, 0, 0),
+        Size = sz or UDim2.new(1, 0, 1, 0),
+        ZIndex = z or 2,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+    })
+end
+
+local function Row(parent, h, z)
+    return New("Frame", {
+        Parent = parent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, h or 34),
+        ZIndex = z or 2,
+    })
+end
+
+local function Divider(parent, z)
+    New("Frame", {
+        Parent = parent,
+        BackgroundColor3 = T.Border,
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = z or 2,
+        BorderSizePixel = 0,
+    })
+end
+
+local function Drag(win, handle)
+    local dragging, startMouse, startPos
+    handle.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or
+           i.UserInputType == Enum.UserInputType.Touch then
+            dragging   = true
+            startMouse = i.Position
+            startPos   = win.Position
+            i.Changed:Connect(function()
+                if i.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    UIS.InputChanged:Connect(function(i)
+        if dragging and (
+            i.UserInputType == Enum.UserInputType.MouseMovement or
+            i.UserInputType == Enum.UserInputType.Touch) then
+            local d = i.Position - startMouse
+            win.Position = UDim2.new(
+                startPos.X.Scale,  startPos.X.Offset  + d.X,
+                startPos.Y.Scale,  startPos.Y.Offset  + d.Y)
+        end
+    end)
+end
+
+-- Só um dropdown aberto por vez
+local _closeDrop = nil
+local function CloseAnyDrop()
+    if _closeDrop then pcall(_closeDrop) end
+    _closeDrop = nil
+end
+
+-- Config persistence
+local CFG_DIR = "ShadowUI"
+local CFG_EXT = ".json"
+local function SafeWrite(path, data)
+    pcall(function()
+        if not isfolder(CFG_DIR) then makefolder(CFG_DIR) end
+        writefile(path, data)
+    end)
+end
+local function SafeRead(path)
+    local ok, d = pcall(readfile, path)
+    return ok and d or nil
+end
+local function ListCfgs()
+    local out = {"default"}
+    pcall(function()
+        if not isfolder(CFG_DIR) then return end
+        for _, f in ipairs(listfiles(CFG_DIR)) do
+            local n = (f:match("[^/\\]+$") or f):gsub(CFG_EXT.."$", "")
+            if n ~= "default" and n ~= "__auto" then
+                table.insert(out, n)
+            end
+        end
+    end)
+    return out
+end
+
+-- ══════════════════════════════════════════════
+--  CONSTRUCTOR
+-- ══════════════════════════════════════════════
+function ShadowUI.new(cfg)
+    cfg = cfg or {}
+    local self = setmetatable({}, ShadowUI)
+    self.Title    = cfg.Title    or "Shadow UI"
+    self.Subtitle = cfg.Subtitle or "Welcome Back"
+    self.Username = cfg.Username or LP.Name
+    self.Expiry   = cfg.Expiry   or "∞"
+    self._cats    = {}
+    self._visible = true
+    self._active  = nil   -- seção ativa
+    self._ctrls   = {}    -- id → ctrl para save/load
+    self._theme   = "Dark"
+
+    local W, H = 660, 448
+
+    -- ScreenGui
+    self.Gui = New("ScreenGui", {
+        Name = "ShadowUI_v4", Parent = PGui,
+        ResetOnSpawn = false, DisplayOrder = 200,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+    })
+
+    -- Janela principal
+    self.Win = New("Frame", {
+        Parent = self.Gui,
+        BackgroundColor3 = T.Bg,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, W, 0, H),
+        BorderSizePixel = 0,
+        ClipsDescendants = false,
+    })
+    Corner(16, self.Win)
+    self._winStroke = Stroke(T.Border, 1.5, self.Win)
+
+    -- Sombra profunda
+    New("ImageLabel", {
+        Parent = self.Win,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, -40, 0, -40),
+        Size = UDim2.new(1, 80, 1, 80),
+        ZIndex = 0,
+        Image = "rbxassetid://6014261993",
+        ImageColor3 = Color3.new(0, 0, 0),
+        ImageTransparency = 0.3,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(49, 49, 450, 450),
+    })
+
+    -- ── HEADER 46px ─────────────────────────
+    self.Hdr = New("Frame", {
+        Parent = self.Win,
+        BackgroundColor3 = T.Header,
+        Size = UDim2.new(1, 0, 0, 46),
+        ZIndex = 10,
+        BorderSizePixel = 0,
+        ClipsDescendants = false,
+    })
+    Corner(16, self.Hdr)
+
+    -- Linha accent no topo do header
+    local accentLine = New("Frame", {
+        Parent = self.Hdr,
+        BackgroundColor3 = T.Accent,
+        Size = UDim2.new(1, 0, 0, 3),
+        ZIndex = 12,
+        BorderSizePixel = 0,
+    })
+    New("UIGradient", {
+        Parent = accentLine,
+        Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   T.AccentDim),
+            ColorSequenceKeypoint.new(0.4, T.Accent),
+            ColorSequenceKeypoint.new(0.6, T.AccentHi),
+            ColorSequenceKeypoint.new(1,   T.AccentDim),
+        },
+    })
+    self._accentLine = accentLine
+
+    -- Linha separadora inferior do header
+    New("Frame", {
+        Parent = self.Hdr,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(0, 0, 1, -1),
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = 11, BorderSizePixel = 0,
+    })
+
+    Drag(self.Win, self.Hdr)
+
+    -- Logo: círculo outline + dot
+    local logo = New("Frame", {
+        Parent = self.Hdr,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 14, .5, -9),
+        Size = UDim2.new(0, 18, 0, 18),
+        ZIndex = 11,
+    })
+    Corner(9, logo)
+    self._logoStroke = Stroke(T.Accent, 1.5, logo)
+    New("Frame", {
+        Parent = self.Hdr,
+        BackgroundColor3 = T.Accent,
+        Position = UDim2.new(0, 18, .5, -5),
+        Size = UDim2.new(0, 10, 0, 10),
+        ZIndex = 12, BorderSizePixel = 0,
+    })
+    Corner(5, self.Hdr:GetChildren()[#self.Hdr:GetChildren()])
+
+    -- Título
+    New("TextLabel", {
+        Parent = self.Hdr,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 38, .5, -9),
+        Size = UDim2.new(0, 80, 0, 18),
+        Font = Enum.Font.GothamBold,
+        Text = self.Title,
+        TextColor3 = T.TxtPri,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 11,
+    })
+
+    -- Breadcrumb
+    self.BreadFrame = New("Frame", {
+        Parent = self.Hdr,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 128, 0, 0),
+        Size = UDim2.new(.44, 0, 1, 0),
+        ZIndex = 11, ClipsDescendants = true,
+    })
+    List(self.BreadFrame, Enum.FillDirection.Horizontal, 4)
+    self.BreadCat = Label(self.BreadFrame, "", 11, T.TxtSec,
+        Enum.Font.Gotham, Enum.TextXAlignment.Left,
+        nil, UDim2.new(0, 80, 1, 0), 11)
+
+    -- Info direita
+    New("TextLabel", {
+        Parent = self.Hdr,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, -14, 1, 0),
+        Font = Enum.Font.GothamBold,
+        Text = self.Subtitle .. ", " .. self.Username .. "!\nDays Until Expiry: " .. self.Expiry,
+        TextColor3 = T.TxtPri,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        TextYAlignment = Enum.TextYAlignment.Center,
+        LineHeight = 1.6,
+        ZIndex = 11,
+    })
+
+    -- ── SIDEBAR 162px ───────────────────────
+    local SB = 162
+    self.Sidebar = New("Frame", {
+        Parent = self.Win,
+        BackgroundColor3 = T.Sidebar,
+        Position = UDim2.new(0, 0, 0, 46),
+        Size = UDim2.new(0, SB, 1, -46),
+        ZIndex = 8, BorderSizePixel = 0,
+        ClipsDescendants = true,
+    })
+
+    -- Borda direita sidebar
+    New("Frame", {
+        Parent = self.Sidebar,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(1, -1, 0, 0),
+        Size = UDim2.new(0, 1, 1, 0),
+        ZIndex = 9, BorderSizePixel = 0,
+    })
+    -- Faixa accent esquerda
+    New("Frame", {
+        Parent = self.Sidebar,
+        BackgroundColor3 = T.Accent,
+        Size = UDim2.new(0, 2, 1, 0),
+        ZIndex = 10, BorderSizePixel = 0,
+    })
+
+    -- Search
+    local sw = New("Frame", {
+        Parent = self.Sidebar,
+        BackgroundColor3 = T.DropBg,
+        Position = UDim2.new(0, 9, 0, 9),
+        Size = UDim2.new(1, -18, 0, 28),
+        ZIndex = 9, BorderSizePixel = 0,
+    })
+    Corner(9, sw)
+    Stroke(T.Border, 1, sw)
+    Label(sw, "⌕", 13, T.TxtDim, Enum.Font.Gotham,
+        Enum.TextXAlignment.Center, UDim2.new(0,0,0,0), UDim2.new(0,22,1,0), 10)
+    local searchBox = New("TextBox", {
+        Parent = sw,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 21, 0, 0),
+        Size = UDim2.new(1, -25, 1, 0),
+        Font = Enum.Font.Gotham,
+        PlaceholderText = "Search...",
+        PlaceholderColor3 = T.TxtDim,
+        Text = "",
+        TextColor3 = T.TxtPri,
+        TextSize = 11,
+        ClearTextOnFocus = false,
+        ZIndex = 10,
+    })
+
+    -- Divider
+    New("Frame", {
+        Parent = self.Sidebar,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(0, 9, 0, 43),
+        Size = UDim2.new(1, -18, 0, 1),
+        ZIndex = 9, BorderSizePixel = 0,
+    })
+
+    -- Side scroll
+    self.SideScroll = New("ScrollingFrame", {
+        Parent = self.Sidebar,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 0, 49),
+        Size = UDim2.new(1, 0, 1, -49),
+        ScrollBarThickness = 2,
+        ScrollBarImageColor3 = T.AccentDim,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        ZIndex = 9,
+        ScrollingDirection = Enum.ScrollingDirection.Y,
+    })
+    local sideLayout = List(self.SideScroll)
+    AutoSize(self.SideScroll, sideLayout, 8)
+
+    -- Search filter
+    searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local q = searchBox.Text:lower()
+        for _, cat in ipairs(self._cats) do
+            local show = q == "" or cat.Name:lower():find(q, 1, true)
+            if cat._row then cat._row.Visible = show ~= nil and show ~= false end
+            for _, sec in ipairs(cat._secs) do
+                local sm = show or sec.Name:lower():find(q, 1, true)
+                if sec._btn then sec._btn.Visible = sm ~= nil and sm ~= false end
+            end
+        end
+    end)
+
+    -- ── CONTENT ─────────────────────────────
+    self.Content = New("Frame", {
+        Parent = self.Win,
+        BackgroundColor3 = T.Panel,
+        Position = UDim2.new(0, SB, 0, 46),
+        Size = UDim2.new(1, -SB, 1, -46),
+        ZIndex = 5, BorderSizePixel = 0,
+    })
+
+    -- Tab bar 32px
+    self.TabBar = New("Frame", {
+        Parent = self.Content,
+        BackgroundColor3 = T.TabBar,
+        Size = UDim2.new(1, 0, 0, 32),
+        ZIndex = 6, BorderSizePixel = 0,
+    })
+    New("Frame", {
+        Parent = self.TabBar,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(0, 0, 1, -1),
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = 7, BorderSizePixel = 0,
+    })
+    self.TabList = New("Frame", {
+        Parent = self.TabBar,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -10, 1, 0),
+        ZIndex = 7,
+    })
+    List(self.TabList, Enum.FillDirection.Horizontal, 0)
+
+    -- Panels container
+    self.Panels = New("Frame", {
+        Parent = self.Content,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 32),
+        Size = UDim2.new(1, 0, 1, -32),
+        ZIndex = 5,
+    })
+
+    local function MkScrollPanel(xPos, xSize)
+        local sc = New("ScrollingFrame", {
+            Parent = self.Panels,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Position = xPos,
+            Size = xSize,
+            ScrollBarThickness = 2,
+            ScrollBarImageColor3 = T.AccentDim,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            ZIndex = 5,
+            ScrollingDirection = Enum.ScrollingDirection.Y,
+        })
+        local lay = List(sc)
+        Padding(10, 10, 8, 8, sc)
+        AutoSize(sc, lay, 12)
+        return sc
+    end
+
+    self.LeftPanel  = MkScrollPanel(UDim2.new(0, 0, 0, 0), UDim2.new(.5, -1, 1, 0))
+    New("Frame", {
+        Parent = self.Panels,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(.5, -1, 0, 0),
+        Size = UDim2.new(0, 1, 1, 0),
+        ZIndex = 6, BorderSizePixel = 0,
+    })
+    self.RightPanel = MkScrollPanel(UDim2.new(.5, 1, 0, 0), UDim2.new(.5, -1, 1, 0))
+
+    -- ── FLOAT BUTTON ────────────────────────
+    self.FloatBtn = New("Frame", {
+        Parent = self.Gui,
+        BackgroundColor3 = T.Accent,
+        Position = UDim2.new(0, 12, .5, -16),
+        Size = UDim2.new(0, 32, 0, 32),
+        ZIndex = 300, BorderSizePixel = 0,
+    })
+    Corner(12, self.FloatBtn)
+    Stroke(T.AccentHi, 1.5, self.FloatBtn)
+    self._floatLbl = Label(self.FloatBtn, "◀", 13, T.White,
+        Enum.Font.GothamBold, Enum.TextXAlignment.Center,
+        nil, UDim2.new(1,0,1,0), 301)
+    local floatHit = New("TextButton", {
+        Parent = self.FloatBtn,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,1,0),
+        Text = "", ZIndex = 302,
+    })
+    floatHit.MouseEnter:Connect(function()
+        Tween(self.FloatBtn, {BackgroundColor3 = T.AccentHi, Size = UDim2.new(0,34,0,34)}, .1)
+    end)
+    floatHit.MouseLeave:Connect(function()
+        Tween(self.FloatBtn, {BackgroundColor3 = T.Accent, Size = UDim2.new(0,32,0,32)}, .1)
+    end)
+    floatHit.MouseButton1Click:Connect(function() self:_Toggle() end)
+
+    return self
+end
+
+-- ══════════════════════════════════════════════
+--  TOGGLE WINDOW
+-- ══════════════════════════════════════════════
+function ShadowUI:_Toggle()
+    self._visible = not self._visible
+    local W, H = 660, 448
+    if self._visible then
+        self.Win.Visible = true
+        self.Win.Size = UDim2.new(0, 0, 0, H)
+        Tween(self.Win, {Size = UDim2.new(0, W, 0, H)},
+            .22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+        self._floatLbl.Text = "◀"
+    else
+        Tween(self.Win, {Size = UDim2.new(0, 0, 0, H)},
+            .16, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+        task.delay(.2, function()
+            if not self._visible then
+                self.Win.Visible = false
+                self.Win.Size = UDim2.new(0, W, 0, H)
+            end
+        end)
+        self._floatLbl.Text = "▶"
+    end
+end
+
+-- ══════════════════════════════════════════════
+--  BREADCRUMB
+-- ══════════════════════════════════════════════
+function ShadowUI:_Bread(catName, secName)
+    for _, c in ipairs(self.BreadFrame:GetChildren()) do
+        if c ~= self.BreadCat and not c:IsA("UIListLayout") then c:Destroy() end
+    end
+    self.BreadCat.Text = catName or ""
+    if secName then
+        Label(self.BreadFrame, "›", 14, T.TxtDim, Enum.Font.Gotham,
+            Enum.TextXAlignment.Center, nil, UDim2.new(0,10,1,0), 11)
+        Label(self.BreadFrame, secName, 11, T.TxtAcc, Enum.Font.GothamBold,
+            Enum.TextXAlignment.Left, nil, UDim2.new(0,120,1,0), 11)
+    end
+end
+
+-- ══════════════════════════════════════════════
+--  ADD CATEGORY
+-- ══════════════════════════════════════════════
+function ShadowUI:AddCategory(name)
+    local cat = {Name = name, _secs = {}, _open = false}
+
+    local row = New("TextButton", {
+        Parent = self.SideScroll,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 37),
+        Text = "", AutoButtonColor = false,
+        ZIndex = 10,
+    })
+    Corner(8, row)
+    Padding(5, 5, 0, 0, row)
+
+    row.MouseEnter:Connect(function()
+        if not cat._open then
+            Tween(row, {BackgroundColor3 = T.RowHov}, .08)
+            row.BackgroundTransparency = 0
+        end
+    end)
+    row.MouseLeave:Connect(function()
+        if not cat._open then row.BackgroundTransparency = 1 end
+    end)
+
+    -- Icon ring
+    local icoRing = New("Frame", {
+        Parent = row,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 5, .5, -7),
+        Size = UDim2.new(0, 14, 0, 14),
+        ZIndex = 11,
+    })
+    Corner(7, icoRing)
+    cat._icoStroke = Stroke(T.TxtSec, 1.2, icoRing)
+
+    New("Frame", {
+        Parent = row,
+        BackgroundColor3 = T.TxtSec,
+        Position = UDim2.new(0, 8, .5, -4),
+        Size = UDim2.new(0, 8, 0, 8),
+        ZIndex = 12, BorderSizePixel = 0,
+    })
+    Corner(4, row:GetChildren()[#row:GetChildren()])
+    cat._icoDot = row:GetChildren()[#row:GetChildren()]
+
+    Label(row, name, 11, T.TxtPri, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 24, 0, 0), UDim2.new(1, -42, 1, 0), 11)
+
+    cat._chev = Label(row, "›", 14, T.TxtDim, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center,
+        UDim2.new(1, -18, 0, 0), UDim2.new(0, 14, 1, 0), 11)
+
+    -- Section container
+    local secFrame = New("Frame", {
+        Parent = self.SideScroll,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0),
+        ClipsDescendants = true,
+        Visible = false,
+        ZIndex = 10,
+    })
+    local secLayout = List(secFrame)
+    cat._row = row
+    cat._sf  = secFrame
+    cat._sl  = secLayout
+
+    row.MouseButton1Click:Connect(function()
+        cat._open = not cat._open
+        if cat._open then
+            secFrame.Visible = true
+            secFrame.Size = UDim2.new(1, 0, 0, secLayout.AbsoluteContentSize.Y)
+            cat._chev.Text = "↓"
+            row.BackgroundTransparency = 0
+            Tween(row, {BackgroundColor3 = T.RowHov}, .08)
+            cat._icoStroke.Color = T.Accent
+            cat._icoDot.BackgroundColor3 = T.Accent
+            if #cat._secs > 0 and not cat._secs[1]._active then
+                task.defer(function() cat._secs[1]._btn.MouseButton1Click:Fire() end)
+            end
+        else
+            secFrame.Visible = false
+            secFrame.Size = UDim2.new(1, 0, 0, 0)
+            cat._chev.Text = "›"
+            row.BackgroundTransparency = 1
+            cat._icoStroke.Color = T.TxtSec
+            cat._icoDot.BackgroundColor3 = T.TxtSec
+        end
+    end)
+
+    self._cats[#self._cats + 1] = cat
+    return cat
+end
+
+-- ══════════════════════════════════════════════
+--  ADD SECTION
+-- ══════════════════════════════════════════════
+function ShadowUI:AddSection(cat, name)
+    local sec = {Name = name, _cat = cat, _active = false, _left = {}, _right = {}}
+
+    local btn = New("TextButton", {
+        Parent = cat._sf,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 28),
+        Text = "", AutoButtonColor = false,
+        ZIndex = 11,
+    })
+    Corner(7, btn)
+
+    -- Accent bar
+    local bar = New("Frame", {
+        Parent = btn,
+        BackgroundColor3 = T.Accent,
+        Position = UDim2.new(0, 3, .18, 0),
+        Size = UDim2.new(0, 2, .64, 0),
+        ZIndex = 13, Visible = false, BorderSizePixel = 0,
+    })
+    Corner(1, bar)
+
+    -- Diamond
+    local dia = New("Frame", {
+        Parent = btn,
+        BackgroundColor3 = T.AccentDim,
+        Position = UDim2.new(0, 14, .5, -4),
+        Size = UDim2.new(0, 8, 0, 8),
+        Rotation = 45, ZIndex = 12, BorderSizePixel = 0,
+    })
+
+    local lbl = Label(btn, name, 11, T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 28, 0, 0), UDim2.new(1, -32, 1, 0), 12)
+
+    sec._btn = btn; sec._bar = bar; sec._dia = dia; sec._lbl = lbl
+
+    btn.MouseEnter:Connect(function()
+        if not sec._active then
+            Tween(btn, {BackgroundColor3 = T.RowHov}, .08)
+            btn.BackgroundTransparency = 0
+        end
+    end)
+    btn.MouseLeave:Connect(function()
+        if not sec._active then btn.BackgroundTransparency = 1 end
+    end)
+
+    btn.MouseButton1Click:Connect(function()
+        if self._active then
+            local p = self._active
+            p._active = false
+            p._lbl.TextColor3 = T.TxtSec
+            p._dia.BackgroundColor3 = T.AccentDim
+            p._bar.Visible = false
+            p._btn.BackgroundTransparency = 1
+        end
+        sec._active = true
+        lbl.TextColor3 = T.TxtAcc
+        dia.BackgroundColor3 = T.Accent
+        bar.Visible = true
+        btn.BackgroundColor3 = T.RowHov
+        btn.BackgroundTransparency = 0
+        self._active = sec
+        self:_Bread(cat.Name, name)
+        self:_Render(sec)
+    end)
+
+    cat._secs[#cat._secs + 1] = sec
+    cat._sf.Size = UDim2.new(1, 0, 0, cat._sl.AbsoluteContentSize.Y + 28)
+    return sec
+end
+
+-- ══════════════════════════════════════════════
+--  RENDER SECTION
+-- ══════════════════════════════════════════════
+function ShadowUI:_Render(sec)
+    CloseAnyDrop()
+
+    -- Limpa painéis
+    for _, panel in ipairs({self.LeftPanel, self.RightPanel}) do
+        for _, c in ipairs(panel:GetChildren()) do
+            if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then
+                c:Destroy()
+            end
+        end
+    end
+    -- Limpa tablist
+    for _, c in ipairs(self.TabList:GetChildren()) do
+        if not c:IsA("UIListLayout") then c:Destroy() end
+    end
+
+    -- Tabs
+    for _, s in ipairs(sec._cat._secs) do
+        local act = (s == sec)
+        local tab = New("Frame", {
+            Parent = self.TabList,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 82, 1, 0),
+            ZIndex = 7,
+        })
+        if act then
+            New("Frame", {
+                Parent = tab,
+                BackgroundColor3 = T.Accent,
+                Position = UDim2.new(0, 0, 1, -2),
+                Size = UDim2.new(1, 0, 0, 2),
+                ZIndex = 9, BorderSizePixel = 0,
+            })
+        end
+        New("Frame", {
+            Parent = tab,
+            BackgroundColor3 = act and T.Accent or T.AccentDim,
+            Position = UDim2.new(0, 6, .5, -3),
+            Size = UDim2.new(0, 6, 0, 6),
+            Rotation = 45, ZIndex = 8, BorderSizePixel = 0,
+        })
+        Label(tab, s.Name, 10, act and T.TxtAcc or T.TxtSec,
+            act and Enum.Font.GothamBold or Enum.Font.Gotham,
+            Enum.TextXAlignment.Left,
+            UDim2.new(0, 17, 0, 0), UDim2.new(1, -17, 1, 0), 8)
+
+        -- Clique na tab navega direto
+        local hitTab = New("TextButton", {
+            Parent = tab,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,1,0),
+            Text = "", ZIndex = 10,
+        })
+        local _s = s
+        hitTab.MouseButton1Click:Connect(function()
+            _s._btn.MouseButton1Click:Fire()
+        end)
+    end
+
+    for _, ctrl in ipairs(sec._left)  do self:_Build(self.LeftPanel,  ctrl) end
+    for _, ctrl in ipairs(sec._right) do self:_Build(self.RightPanel, ctrl) end
+end
+
+-- ══════════════════════════════════════════════
+--  BUILD CONTROL
+-- ══════════════════════════════════════════════
+function ShadowUI:_Build(panel, ctrl)
+    if ctrl.type == "toggle"   then return self:_BToggle(panel, ctrl)   end
+    if ctrl.type == "slider"   then return self:_BSlider(panel, ctrl)   end
+    if ctrl.type == "dropdown" then return self:_BDropdown(panel, ctrl) end
+    if ctrl.type == "header"   then return self:_BHeader(panel, ctrl)   end
+    if ctrl.type == "label"    then return self:_BLabel(panel, ctrl)    end
+    if ctrl.type == "button"   then return self:_BButton(panel, ctrl)   end
+    if ctrl.type == "textinput"then return self:_BTextInput(panel, ctrl)end
+    if ctrl.type == "_custom"  then return ctrl._fn(panel)              end
+end
+
+-- ══════════════════════════════════════════════
+--  TOGGLE
+-- ══════════════════════════════════════════════
+function ShadowUI:_BToggle(panel, ctrl)
+    local val = ctrl._val ~= nil and ctrl._val or (ctrl.default or false)
+
+    local wrap = Row(panel, 36)
+    Corner(8, wrap)
+
+    -- Background hover
+    local bg = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = T.RowHov,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 2, BorderSizePixel = 0,
+    })
+    Corner(8, bg)
+
+    local rightOffset = -34
+    if ctrl.gear then
+        local gBtn = New("TextButton", {
+            Parent = wrap,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(1, -52, .5, -8),
+            Size = UDim2.new(0, 16, 0, 16),
+            Font = Enum.Font.Gotham, Text = "⚙",
+            TextColor3 = T.TxtDim, TextSize = 13, ZIndex = 5,
+        })
+        gBtn.MouseEnter:Connect(function() Tween(gBtn,{TextColor3=T.TxtAcc},.08) end)
+        gBtn.MouseLeave:Connect(function() Tween(gBtn,{TextColor3=T.TxtDim},.08) end)
+        rightOffset = -56
+    end
+
+    local txt = Label(wrap, ctrl.text or "Toggle", 11,
+        val and T.TxtPri or T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 4, 0, 0), UDim2.new(1, rightOffset, 1, 0), 4)
+
+    -- Track
+    local track = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = val and T.TogOn or T.TogOff,
+        Position = UDim2.new(1, -30, .5, -7),
+        Size = UDim2.new(0, 26, 0, 14),
+        ZIndex = 4, BorderSizePixel = 0,
+    })
+    Corner(7, track)
+
+    -- Thumb
+    local thumb = New("Frame", {
+        Parent = track,
+        BackgroundColor3 = T.White,
+        Position = val and UDim2.new(1,-13,.5,-5) or UDim2.new(0,2,.5,-5),
+        Size = UDim2.new(0, 10, 0, 10),
+        ZIndex = 5, BorderSizePixel = 0,
+    })
+    Corner(5, thumb)
+
+    -- Hit
+    local hit = New("TextButton", {
+        Parent = wrap,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "", ZIndex = 7,
+    })
+    hit.MouseEnter:Connect(function() Tween(bg, {BackgroundTransparency = .82}, .08) end)
+    hit.MouseLeave:Connect(function() Tween(bg, {BackgroundTransparency = 1},   .08) end)
+
+    local function Set(v)
+        val = v; ctrl._val = v
+        Tween(track, {BackgroundColor3 = v and T.TogOn or T.TogOff}, .14)
+        Tween(thumb, {Position = v and UDim2.new(1,-13,.5,-5) or UDim2.new(0,2,.5,-5)}, .14)
+        txt.TextColor3 = v and T.TxtPri or T.TxtSec
+        if ctrl.callback then ctrl.callback(v) end
+    end
+    hit.MouseButton1Click:Connect(function() Set(not val) end)
+    ctrl._setValue  = Set
+    ctrl._getValue  = function() return val end
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  SLIDER
+-- ══════════════════════════════════════════════
+function ShadowUI:_BSlider(panel, ctrl)
+    local mn  = ctrl.min    or 0
+    local mx  = ctrl.max    or 100
+    local stp = ctrl.step   or 0
+    local fmt = ctrl.format or "%.2f"
+    local val = ctrl._val ~= nil and ctrl._val or (ctrl.default or mn)
+
+    local function Snap(v)
+        if stp > 0 then v = math.round((v-mn)/stp)*stp+mn end
+        return math.clamp(v, mn, mx)
+    end
+
+    local wrap = Row(panel, 52)
+    Corner(8, wrap)
+
+    -- Header row
+    local hdr = New("Frame", {
+        Parent = wrap,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 4, 0, 4),
+        Size = UDim2.new(1, -8, 0, 16),
+        ZIndex = 3,
+    })
+    Label(hdr, ctrl.text or "Slider", 11, T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left, nil, UDim2.new(.65, 0, 1, 0), 3)
+    local valLbl = Label(hdr, string.format(fmt, val), 11, T.TxtAcc, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Right,
+        UDim2.new(.65, 0, 0, 0), UDim2.new(.35, 0, 1, 0), 3)
+
+    -- Track holder
+    local holder = New("Frame", {
+        Parent = wrap,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 4, 0, 28),
+        Size = UDim2.new(1, -8, 0, 20),
+        ZIndex = 3,
+    })
+
+    -- Track BG
+    local track = New("Frame", {
+        Parent = holder,
+        BackgroundColor3 = T.SlTrack,
+        Position = UDim2.new(0, 0, .5, -3),
+        Size = UDim2.new(1, 0, 0, 6),
+        ZIndex = 4, BorderSizePixel = 0,
+    })
+    Corner(3, track)
+
+    local pct = (val - mn) / (mx - mn)
+
+    -- Fill
+    local fill = New("Frame", {
+        Parent = track,
+        BackgroundColor3 = T.Accent,
+        Size = UDim2.new(pct, 0, 1, 0),
+        ZIndex = 5, BorderSizePixel = 0,
+    })
+    Corner(3, fill)
+    New("UIGradient", {
+        Parent = fill,
+        Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, T.Accent),
+            ColorSequenceKeypoint.new(1, T.AccentHi),
+        },
+    })
+
+    -- Thumb
+    local thumb = New("Frame", {
+        Parent = track,
+        BackgroundColor3 = T.White,
+        Position = UDim2.new(pct, -7, .5, -7),
+        Size = UDim2.new(0, 14, 0, 14),
+        ZIndex = 6, BorderSizePixel = 0,
+    })
+    Corner(7, thumb)
+    Stroke(T.Accent, 1.5, thumb)
+
+    local function Update(absX)
+        local ap = track.AbsolutePosition.X
+        local as = track.AbsoluteSize.X
+        if as <= 0 then return end
+        local p = math.clamp((absX - ap) / as, 0, 1)
+        local v = Snap(mn + p * (mx - mn))
+        val = v; ctrl._val = v
+        local np = (v - mn) / (mx - mn)
+        fill.Size      = UDim2.new(np, 0, 1, 0)
+        thumb.Position = UDim2.new(np, -7, .5, -7)
+        valLbl.Text    = string.format(fmt, v)
+        if ctrl.callback then ctrl.callback(v) end
+    end
+
+    local dragging = false
+
+    local hitZone = New("TextButton", {
+        Parent = holder,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "", ZIndex = 10,
+    })
+
+    hitZone.MouseButton1Down:Connect(function(x, _)
+        dragging = true
+        Update(x)
+        Tween(thumb, {Size = UDim2.new(0, 16, 0, 16), Position = UDim2.new(
+            math.clamp((x - track.AbsolutePosition.X) / math.max(track.AbsoluteSize.X, 1), 0, 1),
+            -8, .5, -8)}, .06)
+    end)
+
+    local mc = UIS.InputChanged:Connect(function(i)
+        if not dragging then return end
+        if i.UserInputType == Enum.UserInputType.MouseMovement or
+           i.UserInputType == Enum.UserInputType.Touch then
+            Update(i.Position.X)
+        end
+    end)
+    local uc = UIS.InputEnded:Connect(function(i)
+        if dragging and (
+            i.UserInputType == Enum.UserInputType.MouseButton1 or
+            i.UserInputType == Enum.UserInputType.Touch) then
+            dragging = false
+            Tween(thumb, {Size = UDim2.new(0, 14, 0, 14)}, .08)
+        end
+    end)
+
+    wrap.AncestryChanged:Connect(function()
+        if not wrap.Parent then
+            pcall(function() mc:Disconnect() end)
+            pcall(function() uc:Disconnect() end)
+        end
+    end)
+
+    ctrl._setValue = function(v)
+        v = Snap(v); val = v; ctrl._val = v
+        local np = (v-mn)/(mx-mn)
+        fill.Size      = UDim2.new(np, 0, 1, 0)
+        thumb.Position = UDim2.new(np, -7, .5, -7)
+        valLbl.Text    = string.format(fmt, v)
+        if ctrl.callback then ctrl.callback(v) end
+    end
+    ctrl._getValue = function() return val end
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  DROPDOWN  — reescrito do zero, sem UIListLayout
+--  Os itens ficam em um ScrollingFrame com
+--  posicionamento absoluto manual (Y = i*itemH).
+--  O DropF pai NÃO usa ClipsDescendants.
+-- ══════════════════════════════════════════════
+function ShadowUI:_BDropdown(panel, ctrl)
+    local opts = ctrl.options or {}
+    local val  = ctrl._val ~= nil and ctrl._val or (ctrl.default or (opts[1] or ""))
+
+    -- Wrapper que vai dentro do panel
+    local wrap = Row(panel, 52)
+
+    Label(wrap, ctrl.text or "Dropdown", 10, T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 3, 0, 3), UDim2.new(1, -6, 0, 14), 3)
+
+    -- Caixa clicável
+    local box = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = T.DropBg,
+        Position = UDim2.new(0, 0, 0, 19),
+        Size = UDim2.new(1, 0, 0, 28),
+        ZIndex = 3, BorderSizePixel = 0,
+    })
+    Corner(8, box)
+    local boxStroke = Stroke(T.Border, 1, box)
+
+    local selLbl = Label(box, tostring(val), 11, T.TxtPri, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 9, 0, 0), UDim2.new(1, -22, 1, 0), 4)
+
+    -- Seta (um Label simples, sem Rotation — só muda o texto)
+    local arrowLbl = Label(box, "▾", 11, T.TxtSec, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center,
+        UDim2.new(1, -18, 0, 0), UDim2.new(0, 14, 1, 0), 4)
+
+    local isOpen = false
+    local dropFrame = nil
+    local overlayBtn = nil
+
+    local function Close()
+        isOpen = false
+        if dropFrame  and dropFrame.Parent  then dropFrame:Destroy()  end
+        if overlayBtn and overlayBtn.Parent then overlayBtn:Destroy() end
+        dropFrame  = nil
+        overlayBtn = nil
+        boxStroke.Color = T.Border
+        Tween(box, {BackgroundColor3 = T.DropBg}, .08)
+        arrowLbl.Text = "▾"
+        if _closeDrop == Close then _closeDrop = nil end
+    end
+
+    local function SetVal(v)
+        val = v; ctrl._val = v
+        selLbl.Text = tostring(v)
+        task.defer(Close)
+        if ctrl.callback then ctrl.callback(v) end
+    end
+
+    local openBtn = New("TextButton", {
+        Parent = box,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "", ZIndex = 5,
+    })
+    openBtn.MouseEnter:Connect(function()
+        if not isOpen then Tween(box, {BackgroundColor3 = T.DropHov}, .08) end
+    end)
+    openBtn.MouseLeave:Connect(function()
+        if not isOpen then Tween(box, {BackgroundColor3 = T.DropBg}, .08) end
+    end)
+
+    openBtn.MouseButton1Click:Connect(function()
+        CloseAnyDrop()
+        if isOpen then return end
+        isOpen = true
+        _closeDrop = Close
+
+        boxStroke.Color = T.Accent
+        Tween(box, {BackgroundColor3 = T.DropHov}, .08)
+        arrowLbl.Text = "▴"
+
+        local ITEM_H = 28
+        local PAD    = 4
+        local maxVis = math.min(#opts, 7)
+        local winH   = maxVis * ITEM_H + PAD * 2
+
+        -- Overlay transparente para fechar ao clicar fora
+        overlayBtn = New("TextButton", {
+            Parent = self.Gui,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Text = "", ZIndex = 98,
+        })
+        overlayBtn.MouseButton1Click:Connect(Close)
+
+        local ap = box.AbsolutePosition
+        local as = box.AbsoluteSize
+
+        -- Frame do dropdown — borda + sombra, SEM ClipsDescendants
+        dropFrame = New("Frame", {
+            Parent = self.Gui,
+            BackgroundColor3 = T.DropBg,
+            Position = UDim2.new(0, ap.X, 0, ap.Y + as.Y + 4),
+            Size = UDim2.new(0, as.X, 0, winH),
+            ZIndex = 100,
+            BorderSizePixel = 0,
+            ClipsDescendants = false,
+        })
+        Corner(10, dropFrame)
+        Stroke(T.Accent, 1.5, dropFrame)
+
+        -- Sombra do dropdown
+        New("ImageLabel", {
+            Parent = dropFrame,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, -14, 0, -14),
+            Size = UDim2.new(1, 28, 1, 28),
+            ZIndex = 99,
+            Image = "rbxassetid://6014261993",
+            ImageColor3 = Color3.new(0, 0, 0),
+            ImageTransparency = 0.38,
+            ScaleType = Enum.ScaleType.Slice,
+            SliceCenter = Rect.new(49, 49, 450, 450),
+        })
+
+        -- ScrollingFrame que contém os itens
+        -- CanvasSize = altura total de todos os itens
+        -- ClipsDescendants = true para não vazar
+        local totalH = #opts * ITEM_H + PAD * 2
+        local sf = New("ScrollingFrame", {
+            Parent = dropFrame,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 0, 0, 0),
+            Size = UDim2.new(1, 0, 1, 0),
+            CanvasSize = UDim2.new(0, 0, 0, totalH),
+            ScrollBarThickness = 3,
+            ScrollBarImageColor3 = T.AccentDim,
+            ScrollingDirection = Enum.ScrollingDirection.Y,
+            ZIndex = 101,
+            ClipsDescendants = true,
+        })
+
+        -- Cada item: posicionado manualmente por Y absoluto
+        for idx, opt in ipairs(opts) do
+            local isSel = (tostring(opt) == tostring(val))
+            local yPos  = PAD + (idx - 1) * ITEM_H
+
+            local item = New("TextButton", {
+                Parent = sf,
+                BackgroundColor3 = isSel and T.AccentDim or T.DropItem,
+                BackgroundTransparency = isSel and 0 or 0,
+                Position = UDim2.new(0, PAD, 0, yPos),
+                Size = UDim2.new(1, -(PAD * 2), 0, ITEM_H - 2),
+                Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham,
+                Text = tostring(opt),
+                TextColor3 = isSel and T.TxtAcc or T.TxtSec,
+                TextSize = 11,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                AutoButtonColor = false,
+                ZIndex = 102,
+                BorderSizePixel = 0,
+            })
+            Corner(4, item)
+            Padding(9, 0, 0, 0, item)
+
+            -- Bullet para item selecionado
+            if isSel then
+                New("Frame", {
+                    Parent = item,
+                    BackgroundColor3 = T.Accent,
+                    Position = UDim2.new(0, -1, .5, -3),
+                    Size = UDim2.new(0, 2, 0, 6),
+                    ZIndex = 103, BorderSizePixel = 0,
+                })
+                Corner(1, item:GetChildren()[#item:GetChildren()])
+            end
+
+            item.MouseEnter:Connect(function()
+                Tween(item, {BackgroundColor3 = T.DropHov, TextColor3 = T.TxtPri}, .07)
+            end)
+            item.MouseLeave:Connect(function()
+                Tween(item, {
+                    BackgroundColor3 = isSel and T.AccentDim or T.DropItem,
+                    TextColor3       = isSel and T.TxtAcc    or T.TxtSec,
+                }, .07)
+            end)
+
+            local _opt = opt
+            item.MouseButton1Click:Connect(function() SetVal(_opt) end)
+        end
+    end)
+
+    ctrl._setValue = function(v)
+        val = v; ctrl._val = v
+        selLbl.Text = tostring(v)
+    end
+    ctrl._getValue = function() return val end
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  BUTTON
+-- ══════════════════════════════════════════════
+function ShadowUI:_BButton(panel, ctrl)
+    local wrap = Row(panel, 36)
+    Corner(8, wrap)
+
+    local bg = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = T.RowHov,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ZIndex = 2, BorderSizePixel = 0,
+    })
+    Corner(8, bg)
+
+    local btnFrame = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = ctrl.accent and T.Accent or T.AccentDim,
+        Position = UDim2.new(0, 4, 0.5, -12),
+        Size = UDim2.new(1, -8, 0, 24),
+        ZIndex = 3, BorderSizePixel = 0,
+    })
+    Corner(7, btnFrame)
+    Stroke(ctrl.accent and T.AccentHi or T.BorderHi, 1, btnFrame)
+
+    local btnLbl = New("TextLabel", {
+        Parent = btnFrame,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Font = Enum.Font.GothamBold,
+        Text = ctrl.text or "Button",
+        TextColor3 = ctrl.accent and T.White or T.TxtAcc,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        ZIndex = 4,
+    })
+
+    local hit = New("TextButton", {
+        Parent = wrap,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "", ZIndex = 7,
+    })
+
+    hit.MouseEnter:Connect(function()
+        Tween(btnFrame, {BackgroundColor3 = ctrl.accent and T.AccentHi or T.BorderHi}, .09)
+        Tween(bg, {BackgroundTransparency = .82}, .08)
+    end)
+    hit.MouseLeave:Connect(function()
+        Tween(btnFrame, {BackgroundColor3 = ctrl.accent and T.Accent or T.AccentDim}, .09)
+        Tween(bg, {BackgroundTransparency = 1}, .08)
+    end)
+    hit.MouseButton1Down:Connect(function()
+        Tween(btnFrame, {BackgroundColor3 = T.Accent, Size = UDim2.new(1, -16, 0, 22)}, .06)
+        btnFrame.Position = UDim2.new(0, 8, 0.5, -11)
+    end)
+    hit.MouseButton1Up:Connect(function()
+        Tween(btnFrame, {Size = UDim2.new(1, -8, 0, 24)}, .08)
+        btnFrame.Position = UDim2.new(0, 4, 0.5, -12)
+    end)
+    hit.MouseButton1Click:Connect(function()
+        if ctrl.callback then ctrl.callback() end
+    end)
+
+    ctrl._setEnabled = function(en)
+        btnFrame.BackgroundTransparency = en and 0 or 0.5
+        btnLbl.TextTransparency = en and 0 or 0.5
+    end
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  TEXT INPUT
+-- ══════════════════════════════════════════════
+function ShadowUI:_BTextInput(panel, ctrl)
+    local wrap = Row(panel, 52)
+    Corner(8, wrap)
+
+    Label(wrap, ctrl.text or "Text", 10, T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 3, 0, 3), UDim2.new(1, -6, 0, 14), 3)
+
+    local box = New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = T.DropBg,
+        Position = UDim2.new(0, 0, 0, 19),
+        Size = UDim2.new(1, 0, 0, 28),
+        ZIndex = 3, BorderSizePixel = 0,
+    })
+    Corner(8, box)
+    local bStroke = Stroke(T.Border, 1, box)
+
+    local tb = New("TextBox", {
+        Parent = box,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -14, 1, 0),
+        Font = Enum.Font.Gotham,
+        PlaceholderText = ctrl.placeholder or "Enter name...",
+        PlaceholderColor3 = T.TxtDim,
+        Text = ctrl.default or "",
+        TextColor3 = T.TxtPri,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ClearTextOnFocus = false,
+        ZIndex = 4,
+    })
+    tb.Focused:Connect(function() Tween(bStroke, {Color = T.Accent}, .1) end)
+    tb.FocusLost:Connect(function()
+        Tween(bStroke, {Color = T.Border}, .1)
+        if ctrl.callback then ctrl.callback(tb.Text) end
+    end)
+
+    ctrl._getValue = function() return tb.Text end
+    ctrl._setValue = function(v) tb.Text = tostring(v) end
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  SECTION HEADER
+-- ══════════════════════════════════════════════
+function ShadowUI:_BHeader(panel, ctrl)
+    local wrap = Row(panel, 30)
+    local rOff = 0
+
+    if ctrl.gear then
+        local g = New("TextButton", {
+            Parent = wrap,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(1, -20, .5, -8),
+            Size = UDim2.new(0, 16, 0, 16),
+            Font = Enum.Font.Gotham, Text = "⚙",
+            TextColor3 = T.TxtDim, TextSize = 13, ZIndex = 4,
+        })
+        g.MouseEnter:Connect(function() Tween(g,{TextColor3=T.TxtAcc},.08) end)
+        g.MouseLeave:Connect(function() Tween(g,{TextColor3=T.TxtDim},.08) end)
+        rOff = 22
+    end
+
+    if ctrl.toggle ~= nil then
+        local tv = ctrl.toggle
+        local tr = New("Frame", {
+            Parent = wrap,
+            BackgroundColor3 = tv and T.TogOn or T.TogOff,
+            Position = UDim2.new(1, -(30 + rOff), .5, -7),
+            Size = UDim2.new(0, 26, 0, 14),
+            ZIndex = 4, BorderSizePixel = 0,
+        })
+        Corner(7, tr)
+        local th = New("Frame", {
+            Parent = tr,
+            BackgroundColor3 = T.White,
+            Position = tv and UDim2.new(1,-13,.5,-5) or UDim2.new(0,2,.5,-5),
+            Size = UDim2.new(0, 9, 0, 9),
+            ZIndex = 5, BorderSizePixel = 0,
+        })
+        Corner(5, th)
+        local tb = New("TextButton", {
+            Parent = tr,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,1,0),
+            Text = "", ZIndex = 6,
+        })
+        tb.MouseButton1Click:Connect(function()
+            tv = not tv
+            Tween(tr, {BackgroundColor3 = tv and T.TogOn or T.TogOff}, .13)
+            Tween(th, {Position = tv and UDim2.new(1,-13,.5,-5) or UDim2.new(0,2,.5,-5)}, .13)
+            if ctrl.callback then ctrl.callback(tv) end
+        end)
+        rOff = rOff + 30
+    end
+
+    Label(wrap, ctrl.text or "", 11, T.TxtSec, Enum.Font.GothamMedium,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0, 0, 0, 0), UDim2.new(1, -(rOff + 4), 1, 0), 3)
+
+    New("Frame", {
+        Parent = wrap,
+        BackgroundColor3 = T.Border,
+        Position = UDim2.new(0, 0, 1, -1),
+        Size = UDim2.new(1, 0, 0, 1),
+        ZIndex = 3, BorderSizePixel = 0,
+    })
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  LABEL
+-- ══════════════════════════════════════════════
+function ShadowUI:_BLabel(panel, ctrl)
+    local wrap = Row(panel, 22)
+    Label(wrap, ctrl.text or "", 11, ctrl.color or T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left, nil, UDim2.new(1,0,1,0), 3)
+    return wrap
+end
+
+-- ══════════════════════════════════════════════
+--  CONFIG TAB (sempre criada em :Finalize())
+-- ══════════════════════════════════════════════
+function ShadowUI:_BuildConfig()
+    local cat = self:AddCategory("Config")
+    local sec = self:AddSection(cat, "Settings")
+
+    -- Tema
+    local tNames = {}
+    for k in pairs(Themes) do table.insert(tNames, k) end
+    table.sort(tNames)
+
+    local function refresh()
+        -- atualiza opções do dropdown de config quando a seção for re-renderizada
+    end
+
+    -- Lado esquerdo: tema + config
+    sec._left = {
+        {
+            type    = "dropdown",
+            text    = "UI Theme",
+            options = tNames,
+            default = self._theme,
+            callback = function(v) self:_Theme(v) end,
+        },
+        { type = "header", text = "Config Files" },
+        {
+            type    = "dropdown",
+            text    = "Config File",
+            options = ListCfgs(),
+            default = "default",
+            id      = "_cfg_drop",
+        },
+        {
+            type        = "textinput",
+            text        = "Config Name",
+            placeholder = "Enter config name...",
+            default     = "",
+            id          = "_cfg_name",
+        },
+        {
+            type    = "button",
+            text    = "✦  Create Config",
+            accent  = true,
+            callback = function()
+                local nc = self._ctrls["_cfg_name"]
+                local name = nc and nc._getValue and nc._getValue() or ""
+                name = name:gsub("[^%w_%-]", ""):lower()
+                if name == "" or name == "default" or name == "__auto" then return end
+                self:SaveConfig(name)
+                local dc = self._ctrls["_cfg_drop"]
+                if dc then
+                    dc.options = ListCfgs()
+                    if dc._setValue then dc._setValue(name) end
+                end
+                if nc and nc._setValue then nc._setValue("") end
+            end,
+        },
+        {
+            type    = "button",
+            text    = "⬆  Save Config",
+            accent  = false,
+            callback = function()
+                local c = self._ctrls["_cfg_drop"]
+                local n = c and c._getValue and c._getValue() or "default"
+                self:SaveConfig(n)
+            end,
+            id = "_cfg_save",
+        },
+        {
+            type    = "button",
+            text    = "⬇  Load Config",
+            accent  = false,
+            callback = function()
+                local c = self._ctrls["_cfg_drop"]
+                local n = c and c._getValue and c._getValue() or "default"
+                self:LoadConfig(n)
+            end,
+            id = "_cfg_load",
+        },
+        {
+            type    = "button",
+            text    = "✕  Delete Config",
+            accent  = false,
+            callback = function()
+                local c = self._ctrls["_cfg_drop"]
+                local n = c and c._getValue and c._getValue() or "default"
+                if n ~= "default" then
+                    pcall(delfile, CFG_DIR.."/"..n..CFG_EXT)
+                    c.options = ListCfgs()
+                    if c._setValue then c._setValue("default") end
+                end
+            end,
+            id = "_cfg_del",
+        },
+        { type = "header", text = "Auto Load" },
+        {
+            type    = "toggle",
+            text    = "Auto Load on Start",
+            default = self:_AutoLoadGet(),
+            callback = function(v) self:_AutoLoadSet(v) end,
+        },
+    }
+
+    -- Registra os controles com id
+    for _, ctrl in ipairs(sec._left) do
+        if ctrl.id then self._ctrls[ctrl.id] = ctrl end
+    end
+    for _, ctrl in ipairs(sec._right or {}) do
+        if ctrl.id then self._ctrls[ctrl.id] = ctrl end
+    end
+
+    task.defer(function()
+        if self:_AutoLoadGet() then
+            local n = self:_AutoLoadName()
+            if n then self:LoadConfig(n) end
+        end
+    end)
+end
+
+-- ══════════════════════════════════════════════
+--  THEME
+-- ══════════════════════════════════════════════
+function ShadowUI:_Theme(name)
+    local th = Themes[name]
+    if not th then return end
+    self._theme = name
+    for k, v in pairs(th) do T[k] = v end
+    pcall(function()
+        self.Win.BackgroundColor3      = T.Bg
+        self.Hdr.BackgroundColor3      = T.Header
+        self.Sidebar.BackgroundColor3  = T.Sidebar
+        self.Content.BackgroundColor3  = T.Panel
+        self.TabBar.BackgroundColor3   = T.TabBar
+        self._accentLine.BackgroundColor3 = T.Accent
+        self.FloatBtn.BackgroundColor3 = T.Accent
+        self._winStroke.Color          = T.Border
+        self._winStroke.Thickness      = 1.5
+        self._logoStroke.Color         = T.Accent
+    end)
+    if self._active then self:_Render(self._active) end
+end
+
+-- ══════════════════════════════════════════════
+--  SAVE / LOAD
+-- ══════════════════════════════════════════════
+function ShadowUI:SaveConfig(name)
+    name = name or "default"
+    local d = {theme = self._theme, v = {}}
+    for id, c in pairs(self._ctrls) do
+        if c._getValue then d.v[id] = c._getValue() end
+    end
+    local ok, j = pcall(HS.JSONEncode, HS, d)
+    if ok then SafeWrite(CFG_DIR.."/"..name..CFG_EXT, j) end
+end
+
+function ShadowUI:LoadConfig(name)
+    name = name or "default"
+    local raw = SafeRead(CFG_DIR.."/"..name..CFG_EXT)
+    if not raw then return end
+    local ok, d = pcall(HS.JSONDecode, HS, raw)
+    if not ok or type(d)~="table" then return end
+    if d.theme then self:_Theme(d.theme) end
+    if d.v then
+        for id, v in pairs(d.v) do
+            local c = self._ctrls[id]
+            if c and c._setValue then c._setValue(v) end
+        end
+    end
+end
+
+function ShadowUI:_AutoLoadGet()
+    local r = SafeRead(CFG_DIR.."/__auto"..CFG_EXT)
+    if not r then return false end
+    local ok, d = pcall(HS.JSONDecode, HS, r)
+    return ok and d and d.on or false
+end
+function ShadowUI:_AutoLoadName()
+    local r = SafeRead(CFG_DIR.."/__auto"..CFG_EXT)
+    if not r then return nil end
+    local ok, d = pcall(HS.JSONDecode, HS, r)
+    return ok and d and d.cfg or nil
+end
+function ShadowUI:_AutoLoadSet(on, cfg)
+    local ok, j = pcall(HS.JSONEncode, HS, {on=on, cfg=cfg or "default"})
+    if ok then SafeWrite(CFG_DIR.."/__auto"..CFG_EXT, j) end
+end
+
+-- ══════════════════════════════════════════════
+--  PUBLIC API
+-- ══════════════════════════════════════════════
+local function _add(sec, side, cfg)
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1] = cfg
+    if sec._active then
+        local ui = sec._cat._secs[1]._cat
+        -- recorre ao self via closure
+    end
+    return cfg
+end
+
+function ShadowUI:Toggle(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="toggle"
+    if cfg.id then self._ctrls[cfg.id]=cfg end
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:Slider(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="slider"
+    if cfg.id then self._ctrls[cfg.id]=cfg end
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:Dropdown(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="dropdown"
+    if cfg.id then self._ctrls[cfg.id]=cfg end
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:SectionHeader(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="header"
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:Label(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="label"
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    return cfg
+end
+
+function ShadowUI:Button(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="button"
+    if cfg.id then self._ctrls[cfg.id]=cfg end
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:TextInput(sec, side, cfg)
+    cfg=cfg or{}; cfg.type="textinput"
+    if cfg.id then self._ctrls[cfg.id]=cfg end
+    local list = side=="right" and sec._right or sec._left
+    list[#list+1]=cfg
+    if sec._active then
+        local panel = side=="right" and self.RightPanel or self.LeftPanel
+        self:_Build(panel, cfg)
+    end
+    return cfg
+end
+
+function ShadowUI:BindToggleKey(key)
+    UIS.InputBegan:Connect(function(i, gpe)
+        if gpe then return end
+        if i.KeyCode == key then self:_Toggle() end
+    end)
+end
+
+-- Finalize: adiciona Config SEMPRE por último, abre primeira cat
+function ShadowUI:Finalize()
+    self:_BuildConfig()
+    for _, cat in ipairs(self._cats) do
+        if cat.Name ~= "Config" then
+            task.defer(function() cat._row.MouseButton1Click:Fire() end)
+            return
+        end
+    end
+end
+
+function ShadowUI:Destroy()
+    self.Gui:Destroy()
+end
+
+-- ══════════════════════════════════════════════
+return ShadowUI
+-- ══════════════════════════════════════════════
