@@ -1,5 +1,5 @@
 --[[
-    S H A D O W  U I  v4.19
+    S H A D O W  U I  v24.1
     Roblox UI Library — Premium Edition
 --]]
 
@@ -403,6 +403,7 @@ function ShadowUI.new(cfg)
         ZIndex=1,
         BorderSizePixel=0,
     })
+    Corner(14, self.Clip)
 
     -- ─────────────────────────────────────────
     --  JANELA
@@ -416,8 +417,11 @@ function ShadowUI.new(cfg)
         BorderSizePixel=0,
         ClipsDescendants=false,
     })
-    Corner(12, self.Win)
+    Corner(14, self.Win)
     self._winStroke = Stroke(T.Border, 1.5, self.Win)
+    -- Glow exterior premium
+    local _winGlow = Stroke(T.AccentDim, 3, self.Win)
+    _winGlow.Transparency = 0.72
 
     -- Sombra externa
     New("ImageLabel", {
@@ -439,15 +443,29 @@ function ShadowUI.new(cfg)
         BackgroundColor3=T.Header,
         Size=UDim2.new(1,0,0,50),
         ZIndex=10, BorderSizePixel=0,
+        ClipsDescendants=true,
     })
-    Corner(12, self.Hdr)
-    -- tapa cantos inferiores do header
+    Corner(14, self.Hdr)
+    -- tapa cantos inferiores do header (apenas os dois de baixo ficam retos)
     New("Frame", {
         Parent=self.Hdr,
         BackgroundColor3=T.Header,
         Position=UDim2.new(0,0,0.5,0),
         Size=UDim2.new(1,0,0.5,0),
         ZIndex=11, BorderSizePixel=0,
+    })
+    -- Gradiente de fundo sutil no header
+    New("UIGradient", {
+        Parent=self.Hdr,
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.new(1,1,1)),
+            ColorSequenceKeypoint.new(1,   Color3.new(0.5,0.5,0.5)),
+        },
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.92),
+            NumberSequenceKeypoint.new(1, 1),
+        },
+        Rotation=90,
     })
 
     -- Linha accent topo (gradiente premium)
@@ -457,39 +475,48 @@ function ShadowUI.new(cfg)
         Size=UDim2.new(1,0,0,2),
         ZIndex=13, BorderSizePixel=0,
     })
-    Corner(1, accentLine)
+    Corner(2, accentLine)
     New("UIGradient", {
         Parent=accentLine,
         Color=ColorSequence.new{
             ColorSequenceKeypoint.new(0,   T.AccentDim),
-            ColorSequenceKeypoint.new(0.3, T.Accent),
+            ColorSequenceKeypoint.new(0.25, T.Accent),
             ColorSequenceKeypoint.new(0.5, T.AccentHi),
-            ColorSequenceKeypoint.new(0.7, T.Accent),
+            ColorSequenceKeypoint.new(0.75, T.Accent),
             ColorSequenceKeypoint.new(1,   T.AccentDim),
         },
     })
     self._accentLine = accentLine
 
-    -- Linha separadora inferior do header
-    New("Frame", {
+    -- Linha separadora inferior do header (com gradiente fade)
+    local hdrSep = New("Frame", {
         Parent=self.Hdr,
         BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1),
         Size=UDim2.new(1,0,0,1),
         ZIndex=12, BorderSizePixel=0,
     })
+    New("UIGradient", {
+        Parent=hdrSep,
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.6),
+            NumberSequenceKeypoint.new(0.5, 0),
+            NumberSequenceKeypoint.new(1, 0.6),
+        },
+    })
 
     MakeDraggable(self.Clip, self.Hdr)
 
-    -- Logo — bolinha com stroke accent
+    -- Logo — bolinha com stroke accent + glow
     local logoRing = New("Frame", {
         Parent=self.Hdr,
-        BackgroundTransparency=1,
-        Position=UDim2.new(0,16,0.5,-10),
-        Size=UDim2.new(0,20,0,20),
+        BackgroundColor3=T.AccentDim,
+        BackgroundTransparency=0.5,
+        Position=UDim2.new(0,14,0.5,-11),
+        Size=UDim2.new(0,22,0,22),
         ZIndex=12,
     })
-    Corner(10, logoRing)
+    Corner(11, logoRing)
     self._logoStroke = Stroke(T.Accent, 1.5, logoRing)
 
     local logoDot = New("Frame", {
@@ -501,17 +528,38 @@ function ShadowUI.new(cfg)
         ZIndex=13, BorderSizePixel=0,
     })
     Corner(5, logoDot)
+    New("UIGradient", {
+        Parent=logoDot,
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0, T.AccentHi),
+            ColorSequenceKeypoint.new(1, T.Accent),
+        },
+        Rotation=135,
+    })
 
     -- Título
     New("TextLabel", {
         Parent=self.Hdr,
         BackgroundTransparency=1,
-        Position=UDim2.new(0,42,0.5,-10),
-        Size=UDim2.new(0,100,0,20),
+        Position=UDim2.new(0,42,0.5,-11),
+        Size=UDim2.new(0,110,0,13),
         Font=Enum.Font.GothamBold,
         Text=self.Title,
         TextColor3=T.TxtPri,
-        TextSize=14,
+        TextSize=13,
+        TextXAlignment=Enum.TextXAlignment.Left,
+        ZIndex=12,
+    })
+    -- Subtítulo versão
+    New("TextLabel", {
+        Parent=self.Hdr,
+        BackgroundTransparency=1,
+        Position=UDim2.new(0,42,0.5,3),
+        Size=UDim2.new(0,110,0,10),
+        Font=Enum.Font.Gotham,
+        Text="v4.1  •  Premium",
+        TextColor3=T.TxtSec,
+        TextSize=9,
         TextXAlignment=Enum.TextXAlignment.Left,
         ZIndex=12,
     })
@@ -555,16 +603,34 @@ function ShadowUI.new(cfg)
         ZIndex=8, BorderSizePixel=0,
         ClipsDescendants=true,
     })
-
-    -- Borda direita da sidebar
+    -- Cantos inferiores da sidebar arredondados
+    Corner(14, self.Sidebar)
+    -- Tapa cantos superiores (ficam retos no topo, tocando o header)
     New("Frame", {
+        Parent=self.Sidebar,
+        BackgroundColor3=T.Sidebar,
+        Size=UDim2.new(1,0,0,14),
+        ZIndex=9, BorderSizePixel=0,
+    })
+
+    -- Borda direita da sidebar (gradient fade)
+    local sbBorder = New("Frame", {
         Parent=self.Sidebar,
         BackgroundColor3=T.Border,
         Position=UDim2.new(1,-1,0,0),
         Size=UDim2.new(0,1,1,0),
         ZIndex=9, BorderSizePixel=0,
     })
-    -- Faixa accent esquerda (mais espessa)
+    New("UIGradient", {
+        Parent=sbBorder,
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.6),
+            NumberSequenceKeypoint.new(0.3, 0),
+            NumberSequenceKeypoint.new(1, 0.4),
+        },
+        Rotation=90,
+    })
+    -- Faixa accent esquerda com gradiente
     local sideAccent = New("Frame", {
         Parent=self.Sidebar,
         BackgroundColor3=T.Accent,
@@ -575,46 +641,65 @@ function ShadowUI.new(cfg)
         Parent=sideAccent,
         Color=ColorSequence.new{
             ColorSequenceKeypoint.new(0,   T.AccentDim),
-            ColorSequenceKeypoint.new(0.5, T.Accent),
+            ColorSequenceKeypoint.new(0.3, T.Accent),
+            ColorSequenceKeypoint.new(0.7, T.Accent),
             ColorSequenceKeypoint.new(1,   T.AccentDim),
         },
         Rotation=90,
     })
 
-    -- Search box
+    -- Search box premium
     local sw = New("Frame", {
         Parent=self.Sidebar,
         BackgroundColor3=T.DropBg,
-        Position=UDim2.new(0,10,0,10),
-        Size=UDim2.new(1,-20,0,30),
+        Position=UDim2.new(0,10,0,12),
+        Size=UDim2.new(1,-20,0,28),
         ZIndex=9, BorderSizePixel=0,
     })
-    Corner(8,sw)
-    Stroke(T.Border,1,sw)
-    Lbl(sw,"⌕",13,T.TxtDim,Enum.Font.Gotham,Enum.TextXAlignment.Center,
-        UDim2.new(0,0,0,0),UDim2.new(0,24,1,0),10)
+    Corner(9,sw)
+    local swStr = Stroke(T.Border,1,sw)
+    -- Ícone de busca
+    Lbl(sw,"🔍",10,T.TxtDim,Enum.Font.Gotham,Enum.TextXAlignment.Center,
+        UDim2.new(0,2,0,0),UDim2.new(0,22,1,0),10)
     local searchBox = New("TextBox", {
         Parent=sw,
         BackgroundTransparency=1,
-        Position=UDim2.new(0,23,0,0),
-        Size=UDim2.new(1,-27,1,0),
+        Position=UDim2.new(0,22,0,0),
+        Size=UDim2.new(1,-26,1,0),
         Font=Enum.Font.Gotham,
-        PlaceholderText="Search...",
+        PlaceholderText="Search tabs...",
         PlaceholderColor3=T.TxtDim,
         Text="",
         TextColor3=T.TxtPri,
-        TextSize=11,
+        TextSize=10,
         ClearTextOnFocus=false,
         ZIndex=10,
     })
+    searchBox.Focused:Connect(function()
+        Tw(swStr, {Color=T.Accent, Thickness=1}, .12)
+        Tw(sw, {BackgroundColor3=T.DropHov}, .12)
+    end)
+    searchBox.FocusLost:Connect(function()
+        Tw(swStr, {Color=T.Border, Thickness=1}, .12)
+        Tw(sw, {BackgroundColor3=T.DropBg}, .12)
+    end)
 
-    -- Divider
-    New("Frame", {
+    -- Divider com gradiente
+    local sbDiv = New("Frame", {
         Parent=self.Sidebar,
         BackgroundColor3=T.Border,
         Position=UDim2.new(0,10,0,46),
         Size=UDim2.new(1,-20,0,1),
         ZIndex=9, BorderSizePixel=0,
+    })
+    New("UIGradient", {
+        Parent=sbDiv,
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.2, 0),
+            NumberSequenceKeypoint.new(0.8, 0),
+            NumberSequenceKeypoint.new(1, 1),
+        },
     })
 
     -- Side scroll
@@ -652,21 +737,52 @@ function ShadowUI.new(cfg)
         Position=UDim2.new(0,SB,0,50),
         Size=UDim2.new(1,-SB,1,-50),
         ZIndex=5, BorderSizePixel=0,
+        ClipsDescendants=true,
+    })
+    -- Cantos inferiores direitos arredondados
+    Corner(14, self.Content)
+    New("Frame", {
+        Parent=self.Content,
+        BackgroundColor3=T.Panel,
+        Size=UDim2.new(1,0,0,14),
+        ZIndex=6, BorderSizePixel=0,
     })
 
-    -- Tab bar
+    -- Tab bar premium
     self.TabBar = New("Frame", {
         Parent=self.Content,
         BackgroundColor3=T.TabBar,
         Size=UDim2.new(1,0,0,34),
         ZIndex=6, BorderSizePixel=0,
     })
-    New("Frame", {
+    -- Gradiente sutil na tabbar
+    New("UIGradient", {
+        Parent=self.TabBar,
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.new(1,1,1)),
+            ColorSequenceKeypoint.new(1, Color3.new(0.5,0.5,0.5)),
+        },
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.95),
+            NumberSequenceKeypoint.new(1, 1),
+        },
+        Rotation=90,
+    })
+    -- Borda inferior tabbar (gradiente)
+    local tabBarLine = New("Frame", {
         Parent=self.TabBar,
         BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1),
         Size=UDim2.new(1,0,0,1),
         ZIndex=7, BorderSizePixel=0,
+    })
+    New("UIGradient", {
+        Parent=tabBarLine,
+        Transparency=NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.5),
+            NumberSequenceKeypoint.new(0.5, 0),
+            NumberSequenceKeypoint.new(1, 0.5),
+        },
     })
     self.TabList = New("Frame", {
         Parent=self.TabBar,
@@ -722,7 +838,7 @@ function ShadowUI.new(cfg)
         Size=UDim2.new(0,36,0,36),
         ZIndex=300, BorderSizePixel=0,
     })
-    Corner(10, self.FloatBtn)
+    Corner(12, self.FloatBtn)
     Stroke(T.AccentHi, 1.5, self.FloatBtn)
     -- Glow interior
     New("UIGradient", {
@@ -1007,34 +1123,54 @@ function ShadowUI:_Render(sec)
         local act = (s==sec)
         local tab = New("Frame",{
             Parent=self.TabList,
-            BackgroundTransparency=1,
-            Size=UDim2.new(0,88,1,0), ZIndex=7,
+            BackgroundColor3=act and T.AccentDim or T.TabBar,
+            BackgroundTransparency=act and 0.6 or 1,
+            Size=UDim2.new(0,88,0,28), ZIndex=7,
+            Position=UDim2.new(0,0,0.5,-14),
         })
+        Corner(7, tab)
         if act then
+            -- Underline accent com cantos arredondados
             local tUnder = New("Frame",{
                 Parent=tab, BackgroundColor3=T.Accent,
-                Position=UDim2.new(0,6,1,-2),
-                Size=UDim2.new(1,-12,0,2),
+                Position=UDim2.new(0,8,1,-2),
+                Size=UDim2.new(1,-16,0,2),
                 ZIndex=9, BorderSizePixel=0,
             })
-            Corner(1,tUnder)
+            Corner(2,tUnder)
+            New("UIGradient",{
+                Parent=tUnder,
+                Transparency=NumberSequence.new{
+                    NumberSequenceKeypoint.new(0, 0.4),
+                    NumberSequenceKeypoint.new(0.5, 0),
+                    NumberSequenceKeypoint.new(1, 0.4),
+                },
+            })
         end
-        local tDia = New("Frame",{
+        -- Dot diamante substituído por círculo premium
+        local tDot = New("Frame",{
             Parent=tab,
             BackgroundColor3=act and T.Accent or T.AccentDim,
-            Position=UDim2.new(0,8,0.5,-3),
+            Position=UDim2.new(0,9,0.5,-3),
             Size=UDim2.new(0,6,0,6),
-            Rotation=45, ZIndex=8, BorderSizePixel=0,
+            ZIndex=8, BorderSizePixel=0,
         })
+        Corner(3,tDot)
         Lbl(tab, s.Name, 10,
             act and T.TxtAcc or T.TxtSec,
             act and Enum.Font.GothamBold or Enum.Font.Gotham,
             Enum.TextXAlignment.Left,
-            UDim2.new(0,19,0,0), UDim2.new(1,-19,1,0), 8)
+            UDim2.new(0,20,0,0), UDim2.new(1,-22,1,0), 8)
         local th = New("TextButton",{
             Parent=tab, BackgroundTransparency=1,
             Size=UDim2.new(1,0,1,0), Text="", ZIndex=10,
         })
+        th.MouseEnter:Connect(function()
+            if not act then Tw(tab,{BackgroundTransparency=0.85},.1) end
+        end)
+        th.MouseLeave:Connect(function()
+            if not act then Tw(tab,{BackgroundTransparency=1},.1) end
+        end)
         local _s=s
         th.MouseButton1Click:Connect(function() _s._btn.MouseButton1Click:Fire() end)
     end
@@ -1062,7 +1198,7 @@ end
 function ShadowUI:_BToggle(panel, ctrl)
     local val = ctrl._val~=nil and ctrl._val or (ctrl.default or false)
     local wrap = Row(panel, 38)
-    Corner(7,wrap)
+    Corner(9,wrap)
 
     -- Fundo hover
     local bg = New("Frame",{
@@ -1071,11 +1207,11 @@ function ShadowUI:_BToggle(panel, ctrl)
         Size=UDim2.new(1,0,1,0),
         ZIndex=2, BorderSizePixel=0,
     })
-    Corner(7,bg)
+    Corner(9,bg)
 
     -- Borda sutil no wrap
     local wStr = Stroke(T.Border, 1, wrap)
-    wStr.Transparency = 0.7
+    wStr.Transparency = 0.65
 
     local rOff = -36
     if ctrl.gear then
@@ -1161,11 +1297,11 @@ function ShadowUI:_BSlider(panel, ctrl)
     end
 
     local wrap = Row(panel, 56)
-    Corner(7,wrap)
+    Corner(9,wrap)
 
     -- Borda sutil
     local wStr = Stroke(T.Border, 1, wrap)
-    wStr.Transparency = 0.7
+    wStr.Transparency = 0.65
 
     -- Fundo hover
     local bg = New("Frame",{
@@ -1173,7 +1309,7 @@ function ShadowUI:_BSlider(panel, ctrl)
         BackgroundTransparency=1,
         Size=UDim2.new(1,0,1,0), ZIndex=2, BorderSizePixel=0,
     })
-    Corner(7,bg)
+    Corner(9,bg)
 
     local hdr = New("Frame",{
         Parent=wrap, BackgroundTransparency=1,
@@ -1287,10 +1423,10 @@ function ShadowUI:_BDropdown(panel, ctrl)
     local val  = ctrl._val~=nil and ctrl._val or (ctrl.default or (opts[1] or ""))
 
     local wrap = Row(panel, 56)
-    Corner(7,wrap)
+    Corner(9,wrap)
 
     local wStr = Stroke(T.Border, 1, wrap)
-    wStr.Transparency = 0.7
+    wStr.Transparency = 0.65
 
     -- Label do dropdown
     local topLbl = New("TextLabel",{
@@ -1475,7 +1611,7 @@ end
 -- ══════════════════════════════════════════════
 function ShadowUI:_BButton(panel, ctrl)
     local wrap = Row(panel, 38)
-    Corner(7,wrap)
+    Corner(9,wrap)
 
     -- Container do botão
     local btn = New("Frame",{
@@ -1485,7 +1621,7 @@ function ShadowUI:_BButton(panel, ctrl)
         Size=UDim2.new(1,0,0,28),
         ZIndex=3, BorderSizePixel=0,
     })
-    Corner(7,btn)
+    Corner(9,btn)
     local bStr = Stroke(T.Accent, 1, btn)
     bStr.Transparency = 0.6
 
@@ -1551,8 +1687,8 @@ end
 --  SECTION HEADER
 -- ══════════════════════════════════════════════
 function ShadowUI:_BHeader(panel, ctrl)
-    local wrap=Row(panel,32)
-    Corner(5,wrap)
+    local wrap=Row(panel,30)
+    Corner(7,wrap)
     local rOff=0
 
     if ctrl.gear then
@@ -1598,20 +1734,28 @@ function ShadowUI:_BHeader(panel, ctrl)
         rOff=rOff+32
     end
 
-    -- Dot accent + texto
+    -- Barra accent esquerda premium (mais espessa, arredondada)
     local dot=New("Frame",{
         Parent=wrap, BackgroundColor3=T.Accent,
-        Position=UDim2.new(0,2,0.5,-3),
-        Size=UDim2.new(0,2,0,14),
+        Position=UDim2.new(0,2,0.5,-5),
+        Size=UDim2.new(0,3,0,12),
         ZIndex=3, BorderSizePixel=0,
     })
-    Corner(1,dot)
+    Corner(2,dot)
+    New("UIGradient",{
+        Parent=dot,
+        Color=ColorSequence.new{
+            ColorSequenceKeypoint.new(0, T.AccentHi),
+            ColorSequenceKeypoint.new(1, T.Accent),
+        },
+        Rotation=90,
+    })
 
-    Lbl(wrap, ctrl.text or "", 11, T.TxtSec, Enum.Font.GothamMedium,
+    Lbl(wrap, ctrl.text or "", 10, T.TxtSec, Enum.Font.GothamMedium,
         Enum.TextXAlignment.Left,
-        UDim2.new(0,8,0,0), UDim2.new(1,-(rOff+12),1,0), 3)
+        UDim2.new(0,10,0,0), UDim2.new(1,-(rOff+14),1,0), 3)
 
-    -- Linha separadora
+    -- Linha separadora com gradiente fade premium
     local sep=New("Frame",{
         Parent=wrap, BackgroundColor3=T.Border,
         Position=UDim2.new(0,0,1,-1),
@@ -1622,11 +1766,12 @@ function ShadowUI:_BHeader(panel, ctrl)
         Parent=sep,
         Color=ColorSequence.new{
             ColorSequenceKeypoint.new(0,T.Accent),
-            ColorSequenceKeypoint.new(0.4,T.Border),
+            ColorSequenceKeypoint.new(0.35,T.Border),
             ColorSequenceKeypoint.new(1,T.Bg),
         },
         Transparency=NumberSequence.new{
-            NumberSequenceKeypoint.new(0,0.4),
+            NumberSequenceKeypoint.new(0,0.3),
+            NumberSequenceKeypoint.new(0.6,0.2),
             NumberSequenceKeypoint.new(1,1),
         },
     })
@@ -1844,9 +1989,29 @@ end
 
 function ShadowUI:Finalize()
     self:_BuildConfig()
+    -- Pré-renderiza a primeira seção de CADA categoria para que os
+    -- controles existam quando o usuário clicar pela primeira vez.
+    for _, cat in ipairs(self._cats) do
+        if cat.Name~="Config" and #cat._secs>0 then
+            local firstSec = cat._secs[1]
+            if not firstSec._active then
+                -- Marca como ativa e renderiza os controles imediatamente
+                firstSec._active = true
+                -- Aplica visual de seleção na pill
+                if firstSec._lbl   then firstSec._lbl.Font=Enum.Font.GothamBold; firstSec._lbl.TextColor3=T.TxtAcc end
+                if firstSec._dot   then firstSec._dot.BackgroundColor3=T.Accent end
+                if firstSec._pill  then firstSec._pill.BackgroundColor3=T.AccentDim; firstSec._pill.BackgroundTransparency=0.2 end
+                if firstSec._pillStr then firstSec._pillStr.Color=T.Accent; firstSec._pillStr.Transparency=0 end
+                self._active = firstSec
+            end
+        end
+    end
+    -- Abre a primeira categoria não-Config e renderiza seu conteúdo
     for _, cat in ipairs(self._cats) do
         if cat.Name~="Config" then
-            task.defer(function() cat._row.MouseButton1Click:Fire() end)
+            task.defer(function()
+                cat._row.MouseButton1Click:Fire()
+            end)
             return
         end
     end
