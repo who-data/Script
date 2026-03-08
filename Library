@@ -1,6 +1,6 @@
 --[[
 ╔══════════════════════════════════════════════════════════════════╗
-║  ShadowUI  v5.2.0  —  Complete Visual Overhaul                  ║
+║  ShadowUI  vh5.2.0  —  Complete Visual Overhaul                  ║
 ║  • Cards with elevated borders + glow layers                    ║
 ║  • Shimmer accent bar, gradient sidebar stripe                  ║
 ║  • Glowing slider thumb, toggle glow on active                  ║
@@ -299,6 +299,7 @@ function ShadowUI.new(cfg)
 
     self.Gui=New("ScreenGui",{Name="ShadowUI_v51",Parent=PGui,ResetOnSpawn=false,DisplayOrder=200,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
     self.Clip=New("Frame",{Parent=self.Gui,BackgroundTransparency=1,AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,0),Size=UDim2.new(0,W,0,H),ClipsDescendants=true,ZIndex=1,BorderSizePixel=0})
+    Corner(14,self.Clip)
     self.Win=New("Frame",{Parent=self.Clip,BackgroundColor3=T.Bg,AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,0),Size=UDim2.new(0,W,0,H),BorderSizePixel=0,ClipsDescendants=false})
     Corner(14,self.Win)
     self._winStroke=Stroke(T.CardBorder,1,self.Win)
@@ -623,41 +624,63 @@ end
 
 -- TOGGLE
 function ShadowUI:_BToggle(panel,ctrl)
-    local val=ctrl._val~=nil and ctrl._val or (ctrl.default or false)
-    local h=ctrl.description and 46 or 38
-    local wrap=Card(panel,h)
-    local activeGlow=Glow(wrap,T.TogOn,val and 0.86 or 1)
-    local rOff=-38
+    local val = ctrl._val~=nil and ctrl._val or (ctrl.default or false)
+    local h   = ctrl.description and 46 or 38
+    local wrap = Card(panel, h)
+    local activeGlow = Glow(wrap, T.AccentGlow, val and 0.86 or 1)
+    local rOff = -48
     if ctrl.gear then
-        local g=New("TextButton",{Parent=wrap,BackgroundTransparency=1,Position=UDim2.new(1,-54,.5,-8),Size=UDim2.new(0,16,0,16),Font=Enum.Font.Gotham,Text="\xe2\x9a\x99",TextColor3=T.TxtDim,TextSize=13,ZIndex=5})
+        local g = New("TextButton",{Parent=wrap,BackgroundTransparency=1,
+            Position=UDim2.new(1,-64,.5,-8),Size=UDim2.new(0,16,0,16),
+            Font=Enum.Font.Gotham,Text="â",
+            TextColor3=T.TxtDim,TextSize=13,ZIndex=5})
         g.MouseEnter:Connect(function() Tw(g,{TextColor3=T.TxtAcc},.08) end)
         g.MouseLeave:Connect(function() Tw(g,{TextColor3=T.TxtDim},.08) end)
-        g.MouseButton1Click:Connect(function() if ctrl.gearCallback then ctrl.gearCallback() end end)
-        rOff=-60
+        g.MouseButton1Click:Connect(function()
+            if ctrl.gearCallback then ctrl.gearCallback() end
+        end)
+        rOff = -80
     end
-    local txt=Lbl(wrap,ctrl.text or "Toggle",11,val and T.TxtPri or T.TxtSec,Enum.Font.Gotham,Enum.TextXAlignment.Left,UDim2.new(0,10,0,ctrl.description and 5 or 0),UDim2.new(1,rOff,0,ctrl.description and 16 or h),4)
-    if ctrl.description then Lbl(wrap,ctrl.description,10,T.TxtDim,Enum.Font.Gotham,Enum.TextXAlignment.Left,UDim2.new(0,10,0,21),UDim2.new(1,rOff,0,18),4) end
-    local track=New("Frame",{Parent=wrap,BackgroundColor3=val and T.TogOn or T.TogOff,Position=UDim2.new(1,-36,.5,-8),Size=UDim2.new(0,30,0,16),ZIndex=4,BorderSizePixel=0}); Corner(8,track)
-    -- Track inner shadow
-    Stroke(val and T.TogOn or T.TogOff,1,track,val and 0.5 or 0.2)
-    local thumb=New("Frame",{Parent=track,BackgroundColor3=T.White,Position=val and UDim2.new(1,-14,.5,-6) or UDim2.new(0,2,.5,-6),Size=UDim2.new(0,12,0,12),ZIndex=5,BorderSizePixel=0}); Corner(6,thumb)
-    -- Thumb glow when on
-    local thumbGlow=Glow(thumb,T.TogOn,val and 0.7 or 1)
-    local hit=New("TextButton",{Parent=wrap,BackgroundTransparency=1,Size=UDim2.new(1,0,1,0),Text="",ZIndex=7})
+    local txt = Lbl(wrap, ctrl.text or "Toggle", 11,
+        val and T.TxtPri or T.TxtSec,
+        Enum.Font.Gotham, Enum.TextXAlignment.Left,
+        UDim2.new(0,10,0,ctrl.description and 5 or 0),
+        UDim2.new(1,rOff,0,ctrl.description and 16 or h), 4)
+    if ctrl.description then
+        Lbl(wrap, ctrl.description, 10, T.TxtDim, Enum.Font.Gotham,
+            Enum.TextXAlignment.Left,
+            UDim2.new(0,10,0,21), UDim2.new(1,rOff,0,18), 4)
+    end
+    -- Track: flat pill, same dark/accent language as the rest of the UI
+    local track = New("Frame",{Parent=wrap,
+        BackgroundColor3 = val and T.TogOn or T.TogOff,
+        Position = UDim2.new(1,-40,.5,-8),
+        Size     = UDim2.new(0,32,0,16),
+        ZIndex=4, BorderSizePixel=0})
+    Corner(8, track)
+    -- Thumb: clean white circle
+    local thumb = New("Frame",{Parent=track,
+        BackgroundColor3 = T.White,
+        Position = val and UDim2.new(1,-15,.5,-6) or UDim2.new(0,2,.5,-6),
+        Size     = UDim2.new(0,12,0,12),
+        ZIndex=5, BorderSizePixel=0})
+    Corner(6, thumb)
+    local hit = New("TextButton",{Parent=wrap,BackgroundTransparency=1,
+        Size=UDim2.new(1,0,1,0),Text="",ZIndex=7})
     hit.MouseEnter:Connect(function() Tw(wrap,{BackgroundColor3=T.CardHov},.1) end)
     hit.MouseLeave:Connect(function() Tw(wrap,{BackgroundColor3=T.Card},.1) end)
-    if ctrl.tooltip then self:_AttachTooltip(hit,ctrl.tooltip) end
+    if ctrl.tooltip then self:_AttachTooltip(hit, ctrl.tooltip) end
     local function Set(v)
         val=v; ctrl._val=v
-        Tw(track,{BackgroundColor3=v and T.TogOn or T.TogOff},.15)
-        Tw(thumb,{Position=v and UDim2.new(1,-14,.5,-6) or UDim2.new(0,2,.5,-6)},.15)
+        Tw(track,{BackgroundColor3=v and T.TogOn or T.TogOff},.14)
+        Tw(thumb,{Position=v and UDim2.new(1,-15,.5,-6) or UDim2.new(0,2,.5,-6)},.14)
         Tw(txt,{TextColor3=v and T.TxtPri or T.TxtSec},.12)
-        Tw(activeGlow,{ImageTransparency=v and 0.86 or 1},.2)
-        Tw(thumbGlow,{ImageTransparency=v and 0.7 or 1},.2)
+        Tw(activeGlow,{ImageTransparency=v and 0.86 or 1},.18)
         if ctrl.callback then ctrl.callback(v) end
     end
     hit.MouseButton1Click:Connect(function() Set(not val) end)
-    ctrl._setValue=Set; ctrl._getValue=function() return val end
+    ctrl._setValue = Set
+    ctrl._getValue = function() return val end
     return wrap
 end
 
