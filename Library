@@ -1441,48 +1441,65 @@ end
 --  BUTTON CONTROL
 -- ══════════════════════════════════════════════
 function ShadowUI:_BButton(panel, ctrl)
-    local wrap = Row(panel, 38)
+    local wrap = Row(panel, 36)
     Corner(5, wrap)
 
-    local style = ctrl.style or "accent" -- "accent" | "outline" | "danger"
-    local bgCol    = style=="danger"  and Color3.fromRGB(180,32,32)
-                  or style=="outline" and T.DropBg
-                  or T.Accent
-    local bgHov    = style=="danger"  and Color3.fromRGB(220,48,48)
-                  or style=="outline" and T.DropHov
-                  or T.AccentHi
-    local txtCol   = style=="outline" and T.TxtAcc or T.White
-
-    local btn = New("TextButton", {
-        Parent  = wrap,
-        BackgroundColor3 = bgCol,
-        Position= UDim2.new(0, 4, 0.5, -13),
-        Size    = UDim2.new(1, -8, 0, 26),
-        Font    = Enum.Font.GothamBold,
-        Text    = ctrl.text or "Button",
-        TextColor3 = txtCol,
-        TextSize   = 11,
-        AutoButtonColor = false,
-        ZIndex  = 4, BorderSizePixel = 0,
+    -- hover bg igual ao toggle
+    local bg = New("Frame",{
+        Parent=wrap, BackgroundColor3=T.RowHov,
+        BackgroundTransparency=1,
+        Size=UDim2.new(1,0,1,0),
+        ZIndex=2, BorderSizePixel=0,
     })
-    Corner(6, btn)
-    if style == "outline" then
-        Stroke(T.Accent, 1, btn)
-    end
+    Corner(5, bg)
 
-    btn.MouseEnter:Connect(function()
-        Tw(btn, {BackgroundColor3 = bgHov}, .1)
+    -- label à esquerda (mesmo estilo do toggle)
+    Lbl(wrap, ctrl.text or "Button", 11, T.TxtSec, Enum.Font.Gotham,
+        Enum.TextXAlignment.Left,
+        UDim2.new(0,4,0,0), UDim2.new(1,-44,1,0), 4)
+
+    -- pill colorida à direita no lugar do toggle
+    local style  = ctrl.style or "accent"
+    local pilCol = style=="danger"  and Color3.fromRGB(185,35,35)
+               or style=="success" and Color3.fromRGB(46,196,110)
+               or T.Accent                        -- accent / outline / default
+    local pilHov = style=="danger"  and Color3.fromRGB(220,55,55)
+               or style=="success" and Color3.fromRGB(70,220,130)
+               or T.AccentHi
+
+    local pill = New("Frame",{
+        Parent=wrap, BackgroundColor3=pilCol,
+        Position=UDim2.new(1,-36,0.5,-9),
+        Size=UDim2.new(0,28,0,18),
+        ZIndex=4, BorderSizePixel=0,
+    })
+    Corner(9, pill)
+
+    -- ícone dentro da pill
+    local icon = ctrl.icon or "▶"
+    Lbl(pill, icon, 9, T.White, Enum.Font.GothamBold,
+        Enum.TextXAlignment.Center, nil, UDim2.new(1,0,1,0), 5)
+
+    -- hit area em cima de tudo
+    local hit = New("TextButton",{
+        Parent=wrap, BackgroundTransparency=1,
+        Size=UDim2.new(1,0,1,0), Text="", ZIndex=7,
+    })
+    hit.MouseEnter:Connect(function()
+        Tw(bg,  {BackgroundTransparency=0.82}, .08)
+        Tw(pill,{BackgroundColor3=pilHov},      .08)
     end)
-    btn.MouseLeave:Connect(function()
-        Tw(btn, {BackgroundColor3 = bgCol}, .1)
+    hit.MouseLeave:Connect(function()
+        Tw(bg,  {BackgroundTransparency=1},    .08)
+        Tw(pill,{BackgroundColor3=pilCol},      .08)
     end)
-    btn.MouseButton1Click:Connect(function()
-        Tw(btn, {BackgroundColor3 = bgCol}, .05)
+    hit.MouseButton1Click:Connect(function()
+        Tw(pill,{BackgroundColor3=pilCol}, .12)
         if ctrl.callback then ctrl.callback() end
     end)
 
-    ctrl._setValue = function(txt) btn.Text = txt or ctrl.text or "Button" end
-    ctrl._getValue = function() return btn.Text end
+    ctrl._setValue = function(t) end  -- sem estado a guardar
+    ctrl._getValue = function() return nil end
     return wrap
 end
 
@@ -1561,8 +1578,8 @@ function ShadowUI:_BuildConfig()
 
     -- ── botão Save ────────────────────────────
     local saveBtn = {
-        type="button", text="💾  Save Config",
-        style="accent",
+        type="button", text="Save Config",
+        style="accent", icon="💾",
         callback=function()
             local n = getCfgName()
             self:SaveConfig(n)
@@ -1572,8 +1589,8 @@ function ShadowUI:_BuildConfig()
 
     -- ── botão Delete ──────────────────────────
     local delBtn = {
-        type="button", text="🗑  Delete Config",
-        style="danger",
+        type="button", text="Delete Config",
+        style="danger", icon="✕",
         callback=function()
             local n = getCfgName()
             if n ~= "default" then
@@ -1585,8 +1602,8 @@ function ShadowUI:_BuildConfig()
 
     -- ── botão Load ────────────────────────────
     local loadBtn = {
-        type="button", text="📂  Load Config",
-        style="outline",
+        type="button", text="Load Config",
+        style="success", icon="▶",
         callback=function()
             local c = self._ctrls["_cfg_file"]
             local n = c and c._getValue and c._getValue() or "default"
